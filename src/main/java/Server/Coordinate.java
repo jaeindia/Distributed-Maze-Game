@@ -2,7 +2,7 @@ package Server;
 
 import java.io.Serializable;
 
-public class CoOrdinate implements Serializable {
+public class Coordinate implements Serializable {
 
 	/**
 	 * 

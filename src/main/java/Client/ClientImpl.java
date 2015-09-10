@@ -4,8 +4,13 @@
 package Client;
 
 import java.io.Serializable;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+
+import Server.Server;
 
 /**
  * @author a0134505
@@ -25,10 +30,17 @@ public class ClientImpl extends UnicastRemoteObject implements  Serializable, Cl
 
 	/**
 	 * @param args
+	 * @throws RemoteException 
+	 * @throws NotBoundException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws RemoteException, NotBoundException {
 		// TODO Auto-generated method stub
-
+		
+		Registry registry = LocateRegistry.getRegistry("localhost", Constant.RMIPORT);
+		Server serverObj = (Server) registry.lookup(Constant.RMIID);
+//		System.out.print(serverObj.isLoginValid("Test1") + "\n");
+		System.out.print(serverObj.isLoginValid("TestGame") + "\n");
+		
 	}
 
 

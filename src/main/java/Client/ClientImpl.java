@@ -12,8 +12,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import Server.Server;
-import Server.GameInfo;
-
 
 
 /**
@@ -21,11 +19,6 @@ import Server.GameInfo;
  *
  */
 public class ClientImpl extends UnicastRemoteObject implements  Serializable, Client{
-	
-	
-	private static final int RMIPORT = 1234;
-	private static final String RMIID = "server";
-
 	/**
 	 * 
 	 */
@@ -47,9 +40,9 @@ public class ClientImpl extends UnicastRemoteObject implements  Serializable, Cl
 		// TODO Auto-generated method stub
 		Registry registry = LocateRegistry.getRegistry("localhost", Constant.RMIPORT);
 		Server serverObj = (Server) registry.lookup(Constant.RMIID);
-//		System.out.print(serverObj.isLoginValid("Test1") + "\n");
-		System.out.print(serverObj.isLoginValid("TestGame1") + "\n");
 		
+		System.out.println(serverObj.addUser("1", "TestGame"));
+		System.out.println(serverObj.addUser("2", "TestGame1"));
 		
 		/*
 		 * 

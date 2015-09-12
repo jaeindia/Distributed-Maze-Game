@@ -1,37 +1,20 @@
 package Server;
 
-import java.io.Serializable;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 //import server.Server;
 
-public class ServerImpl implements Server{
+public class ServerImpl extends UnicastRemoteObject implements Server{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3034452825691365904L;
-	
-	private static final int RMIPORT = 1234;
-	private static final String RMIID = "Server";
-	
-	private static Map<String,GameInfo> userInfoMap = new ConcurrentHashMap<String, GameInfo>();
-	
-	//private 
-	//private Map<String,CoOrdinate> 
-	
-	public static void test(){
-		
-	
-		
-	}
+	private GameInfo gameInfoObj = new GameInfo();
 	
 	public ServerImpl() throws RemoteException {
 		super();
@@ -45,54 +28,38 @@ public class ServerImpl implements Server{
 		registry.bind(Constant.RMIID, serverImplObj);
 
 		System.out.println("Server Started ...\n");
-	}
-
-
-		//System.out.println("Server Started ...\n");
-	
-
-	public boolean isLoginValid(String password) throws RemoteException {
-		// TODO Auto-generated method stub
-		if (password.equals("TestGame")) {
-			return true;
-		}
-		
-		return false;
-	}
-
-
-
+	}	
 
 	public boolean addUser(String username, String password)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		return false;
+		
+		boolean flag = true;
+		
+		if (username != null && password != null) {
+			flag = gameInfoObj.doesUserExist(username, password);
+			if (!flag) {
+				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
+			}
+		}
+		
+		System.out.println(gameInfoObj.getPlayerPostionMap());
+		
+		return !flag;
 	}
-
-
-
 
 	public boolean moveUser(String username, Coordinate coordinate)
 			throws RemoteException {
 		// TODO Auto-generated method stub
+		
+		
 		return false;
 	}
 
 	@Override
 	public GameInfo fetchGameInfo(String username) {
 		// TODO Auto-generated method stub
-		return null;
+		return gameInfoObj;
 	}
-
-	/*@Override
-	public boolean isLoginValid(String password) throws RemoteException {
-		// TODO Auto-generated method stub
-		
-		if (password.equals("TestGame")) {
-			return true;
-		}
-		
-		return false;
-	}*/
 
 }

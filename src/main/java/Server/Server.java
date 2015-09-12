@@ -11,5 +11,11 @@ public interface Server extends Remote{
 	 */
 	
 	public boolean isLoginValid(String password) throws RemoteException;
+	
+	public boolean addUser(String username,String password) throws RemoteException;
+	
+	public boolean moveUser(String username, Coordinate coordinate) throws RemoteException;
+	
+	
 
 }

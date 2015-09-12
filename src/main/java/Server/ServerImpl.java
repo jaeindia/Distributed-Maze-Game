@@ -33,9 +33,6 @@ public class ServerImpl implements Server{
 		
 	}
 	
-	
-	
-
 	public ServerImpl() throws RemoteException {
 		super();
 		// TODO Auto-generated constructor stub
@@ -79,6 +76,12 @@ public class ServerImpl implements Server{
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public GameInfo fetchGameInfo(String username) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/*@Override

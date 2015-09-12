@@ -16,6 +16,8 @@ public interface Server extends Remote{
 	
 	public boolean moveUser(String username, Coordinate coordinate) throws RemoteException;
 	
+	public GameInfo fetchGameInfo(String username);
+	
 	
 
 }

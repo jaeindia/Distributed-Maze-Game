@@ -11,6 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import Server.Coordinate;
 import Server.Server;
 
 
@@ -42,7 +43,11 @@ public class ClientImpl extends UnicastRemoteObject implements  Serializable, Cl
 		Server serverObj = (Server) registry.lookup(Constant.RMIID);
 		
 		System.out.println(serverObj.addUser("1", "TestGame"));
-		System.out.println(serverObj.addUser("2", "TestGame1"));
+		System.out.println(serverObj.addUser("2", "TestGame"));
+		
+		System.out.println(serverObj.moveUser("1", new Coordinate(0, 1)));
+		System.out.println(serverObj.moveUser("2", new Coordinate(0, 1)));
+		System.out.println(serverObj.moveUser("Test", new Coordinate(1, 1)));
 		
 		/*
 		 * 

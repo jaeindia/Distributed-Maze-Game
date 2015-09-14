@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Client.Client;
+
 public class GameInfo implements Serializable{
 
 	/**
@@ -14,6 +16,8 @@ public class GameInfo implements Serializable{
 	private static final long serialVersionUID = -3469905445419971617L;
 
 	private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
+	
+	private Map<String, Client> playerObjectMap = new ConcurrentHashMap<String, Client>();
 	
 	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
 	
@@ -118,5 +122,13 @@ public class GameInfo implements Serializable{
 
 	void setTreasureCount(int treasureCount) {
 		this.treasureCount = treasureCount;
+	}
+
+	public Map<String, Client> getPlayerObjectMap() {
+		return playerObjectMap;
+	}
+
+	public void setPlayerObjectMap(String username, Client clientObj) {
+		this.playerObjectMap.put(username, clientObj);
 	}
 }

@@ -19,10 +19,22 @@ public class GameInfo implements Serializable{
 	
 	private Map<String,Integer> playerScoreMap = new ConcurrentHashMap<String, Integer>();
 	
+	private int gridSize;
+	
+	private int treasureCount;
+	
 	private Random random = new Random();
 
 	Map<String,Coordinate> getPlayerPostionMap() {
 		return playerPostionMap;
+	}
+	
+	Map<Coordinate, Integer> getTreasureMap() {
+		return treasureMap;
+	}
+	
+	Map<String, Integer> getPlayerScoreMap() {
+		return playerScoreMap;
 	}
 
 	void setPlayerPostionMap(String username, Coordinate coordinate) {
@@ -40,14 +52,14 @@ public class GameInfo implements Serializable{
 		return true;
 	}
 	
-	void populateTreasureMap(int gridSize, int treasureCount) {				
+	void populateTreasureMap() {				
 		int row = 0;
 		int column = 0;
 
-		for (int i = treasureCount; i > 0; i--) {
+		for (int i = this.treasureCount; i > 0; i--) {
 			do{
-				row = random.nextInt(gridSize);
-				column = random.nextInt(gridSize);
+				row = random.nextInt(this.gridSize);
+				column = random.nextInt(this.gridSize);
 			} while(row==0 && column==0);
 			
 			Coordinate coordinate = new Coordinate(row, column);
@@ -73,7 +85,7 @@ public class GameInfo implements Serializable{
 			
 			// Return true if the treasure is found 
 			return true;
-		} 
+		}
 		
 		// Return false if the treasure is not found
 		return false;
@@ -90,5 +102,21 @@ public class GameInfo implements Serializable{
 		}
 		
 		return true;
+	}
+
+	int getGridSize() {
+		return gridSize;
+	}
+
+	void setGridSize(int gridSize) {
+		this.gridSize = gridSize;
+	}
+
+	int getTreasureCount() {
+		return treasureCount;
+	}
+
+	void setTreasureCount(int treasureCount) {
+		this.treasureCount = treasureCount;
 	}
 }

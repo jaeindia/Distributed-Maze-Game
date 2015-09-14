@@ -19,9 +19,16 @@ public class Coordinate implements Serializable {
 		this.column = column;
 	}
 	
+	int getRow() {
+		return this.row;
+	}
 	
-	public boolean equals(Object o){
-		
+	int getColumn() {
+		return this.column;
+	}
+	
+	@Override
+	public boolean equals(Object o){	
 	  Coordinate obj = (Coordinate) o;
 		boolean equal = false;
 		if(obj.row==this.row && obj.column==this.column){

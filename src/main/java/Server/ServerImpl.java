@@ -9,20 +9,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-//import server.Server;
-
-public class ServerImpl extends UnicastRemoteObject implements Server{
+public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3034452825691365904L;
-	private static GameInfo gameInfoObj;
+	private GameInfo gameInfoObj;
+	private int gridSize;
+	private int timeToStart;
 	
 	public ServerImpl() throws RemoteException {
+		// TODO Auto-generated constructor stub
 		super();
 		gameInfoObj = new GameInfo();
-		// TODO Auto-generated constructor stub
+		gridSize = gameInfoObj.getGridSize();
+		timeToStart = 20; // Time to start the game - hard coded
 	}
 	
 	public static void main(String[] args) throws RemoteException, AlreadyBoundException {
@@ -30,18 +32,23 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 		ServerImpl serverImplObj = new ServerImpl();
 		Registry registry = LocateRegistry.createRegistry(Constant.RMIPORT);
 		registry.bind(Constant.RMIID, serverImplObj);
-		
-		// Populate Treasure Map - hard coded
-		gameInfoObj.populateTreasureMap(5, 10);
 
 		System.out.println("Server Started ...\n");
 	}	
 
-	public boolean addUser(String username, String password)
+	public synchronized boolean addUser(String username, String password)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		
 		boolean flag = true;
+		
+		if(this.timeToStart == 20){
+			Thread t = new Thread(this);
+			t.start();
+		}
+		else if(this.timeToStart == 0){
+			return false;
+		}
 		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
@@ -57,19 +64,25 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 	}
 
 	@Override
-	public boolean moveUser(String username, Coordinate coordinate)
+	public synchronized boolean moveUser(String username, Coordinate coordinate)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		Map<String,Coordinate> playerPositionMap = gameInfoObj.getPlayerPostionMap();
 		
-		// CHeck first if the user actually exists
+		// Check first if the user actually exists
 		if (!gameInfoObj.doesUserExist(username, "TestGame")) {
+			return false;
+		}
+		
+		// Check for valid coordinates
+		if (!(coordinate.getRow() >= 0 && coordinate.getRow() < gridSize
+				&& coordinate.getColumn() >= 0 && coordinate.getColumn() < gridSize)) {
 			return false;
 		}
 		
 		// Search logic for the 1-1 position map
 		for (Entry<String, Coordinate> entry : playerPositionMap.entrySet()) {
-	        if (Objects.equals(coordinate, entry.getValue())) {
+			if (Objects.equals(coordinate, entry.getValue())) {
 	            return false;
 	        }
 	    }
@@ -91,10 +104,55 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 	}
 
 	@Override
-	public GameInfo fetchGameInfo(String username) {
+	public synchronized int getGridSize() throws RemoteException {
 		// TODO Auto-generated method stub
+		return gridSize;
+	}
+
+	@Override
+	public synchronized Map<String, Coordinate> getPlayerPostionMap() throws RemoteException {
+		// TODO Auto-generated method stub
+		return gameInfoObj.getPlayerPostionMap();
+	}
+
+	@Override
+	public synchronized Map<Coordinate, Integer> getTreasureMap() throws RemoteException {
+		// TODO Auto-generated method stub
+		return gameInfoObj.getTreasureMap();
+	}
+
+	@Override
+	public synchronized Map<String, Integer> getPlayerScoreMap() throws RemoteException {
+		// TODO Auto-generated method stub
+		return gameInfoObj.getPlayerScoreMap();
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		int timeToBegin = this.timeToStart;
+		while(timeToBegin > 0){
+			System.out.println("Game Start - Countdown : " + timeToStart);
+				timeToBegin--;
+				
+				try {
+					Thread.sleep(1000L);
+				} 
+				catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				this.timeToStart = timeToBegin;
+		}
 		
-		return gameInfoObj;
+		if (this.timeToStart == 0) {
+			// Set gridSize and treasureCount
+			gameInfoObj.setGridSize(5);
+			gameInfoObj.setTreasureCount(10);
+			// Populate Treasure Map - hard coded
+			gameInfoObj.populateTreasureMap();	
+		}
 	}
 
 }

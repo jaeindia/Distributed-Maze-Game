@@ -2,6 +2,7 @@ package Server;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 public interface Server extends Remote{
 	
@@ -14,8 +15,16 @@ public interface Server extends Remote{
 	
 	public boolean moveUser(String username, Coordinate coordinate) throws RemoteException;
 	
-	public GameInfo fetchGameInfo(String username) throws RemoteException;
+	public int getGridSize() throws RemoteException;
 	
+	public Map<String, Coordinate> getPlayerPostionMap() throws RemoteException;
 	
+	public Map<Coordinate, Integer> getTreasureMap() throws RemoteException;
+	
+	public Map<String, Integer> getPlayerScoreMap() throws RemoteException;
+	
+//	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
+//	
+//	private Map<String,Integer> playerScoreMap = new ConcurrentHashMap<String, Integer>();
 
 }

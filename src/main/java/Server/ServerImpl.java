@@ -5,9 +5,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+
+import Client.Client;
 
 public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 
@@ -36,7 +39,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		System.out.println("Server Started ...\n");
 	}	
 
-	public synchronized boolean addUser(String username, String password)
+	public synchronized boolean addUser(String username, String password, Client clientObj)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		
@@ -54,6 +57,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 			flag = gameInfoObj.doesUserExist(username, password);
 			if (!flag) {
 				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
+				gameInfoObj.setPlayerObjectMap(username, clientObj);
 			}
 		}
 		
@@ -151,7 +155,19 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 			gameInfoObj.setGridSize(5);
 			gameInfoObj.setTreasureCount(10);
 			// Populate Treasure Map - hard coded
-			gameInfoObj.populateTreasureMap();	
+			gameInfoObj.populateTreasureMap();
+			
+			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+			while (clientObjectIterator.hasNext()) {
+				Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+				try {
+					clientObjectEntry.getValue().notifyPlayer(true);
+				} 
+				catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

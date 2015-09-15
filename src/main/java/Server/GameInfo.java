@@ -27,6 +27,8 @@ public class GameInfo implements Serializable{
 	
 	private int treasureCount;
 	
+	private int treasureCounter;
+	
 	private Random random = new Random();
 
 	Map<String,Coordinate> getPlayerPostionMap() {
@@ -80,19 +82,24 @@ public class GameInfo implements Serializable{
 
 	}
 	
-	boolean updateTreasureMap(Coordinate coordinate) {
+	int updateTreasureMap(Coordinate coordinate) {
 		if (this.treasureMap.containsKey(coordinate) && this.treasureMap.get(coordinate) != 0) {
 			this.treasureMap.put(coordinate, this.treasureMap.get(coordinate) - 1);
+			this.treasureCounter --;
+			
+			if (treasureCounter == 0) {
+				return -1;
+			}
 			
 			System.out.println("Treasure Map");
 			System.out.println(treasureMap);
 			
 			// Return true if the treasure is found 
-			return true;
+			return 1;
 		}
 		
 		// Return false if the treasure is not found
-		return false;
+		return 0;
 	}
 	
 	boolean updatePlayerScoreMap(String username) {
@@ -122,6 +129,7 @@ public class GameInfo implements Serializable{
 
 	void setTreasureCount(int treasureCount) {
 		this.treasureCount = treasureCount;
+		this.treasureCounter = treasureCount;
 	}
 
 	public Map<String, Client> getPlayerObjectMap() {

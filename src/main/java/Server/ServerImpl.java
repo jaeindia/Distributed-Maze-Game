@@ -94,9 +94,25 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		// Update position
 		gameInfoObj.setPlayerPostionMap(username, coordinate);
 		// Update treasure count map
-		if (gameInfoObj.updateTreasureMap(coordinate)) {
+		if (gameInfoObj.updateTreasureMap(coordinate) == 1 
+				|| gameInfoObj.updateTreasureMap(coordinate) == -1) {
 			// Update user - treasure count
 			gameInfoObj.updatePlayerScoreMap(username);
+		}
+		
+		if (gameInfoObj.updateTreasureMap(coordinate) == -1) {
+			// Update user - End Game
+			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+			while (clientObjectIterator.hasNext()) {
+				Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+				try {
+					clientObjectEntry.getValue().notifyGameEnd(true);
+				} 
+				catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		System.out.println("move user");

@@ -11,6 +11,8 @@ public interface Client extends Remote {
 	 * 
 	 */
 	
-	public void notifyPlayer(boolean gameStarted) throws RemoteException ;
+	public void notifyPlayer(boolean gameStarted) throws RemoteException;
+	
+	public void notifyGameEnd(boolean gameEnded) throws RemoteException;
 	
 }

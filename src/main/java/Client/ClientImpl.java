@@ -5,20 +5,37 @@ package Client;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 
 import org.apache.commons.lang3.StringUtils;
 
+
+
+
+
+
+
+//import server.CoordinatesUtil;
+import Server.Coordinate;
 import Server.GameInfo;
 import Server.Server;
 
@@ -27,7 +44,7 @@ import Server.Server;
  * @author a0134505
  *
  */
-public class ClientImpl extends UnicastRemoteObject implements ActionListener, Serializable, Client{
+public class ClientImpl extends UnicastRemoteObject implements ActionListener,KeyListener, Serializable, Client,Runnable{
 	/**
 	 * 
 	 */
@@ -39,15 +56,22 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 	public JPanel panel = new JPanel();
 	public JLabel welcomeText = new JLabel("Welcome to Distributed Maze Game!!",JLabel.CENTER);
 	public JLabel userName = new JLabel("USERID",JLabel.LEFT);
+	public JTextField keyboardEntry = new JTextField();
 	public JLabel password = new JLabel("PASSWORD",JLabel.LEFT);
 	public JTextField userNameField = new JTextField();
 	public JPasswordField passwordField = new JPasswordField();
 	public JButton logIn = new JButton();
 	public JButton signUp = new JButton();
-    public int gridSize=0;
+    public int gridSize=5;
     public boolean playerAddCheck=false;
     public boolean hasGamestarted = false;
     private GameInfo gameInfo = null;
+    private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
+	
+	
+	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
+	
+	private Map<String,Integer> playerScoreMap = new ConcurrentHashMap<String, Integer>();
 	
 
 	protected ClientImpl() throws RemoteException {
@@ -121,22 +145,34 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 		// TODO Auto-generated method stub
 		try{
 		
+			
 		ClientImpl impl = new ClientImpl();
-		impl.initLoginFrame();
-		
-		
 		Registry registry = LocateRegistry.getRegistry("127.0.0.1", Constant.RMIPORT);
-		Server serverObj = (Server) registry.lookup(Constant.RMIID);
-		
-		while(!impl.playerAddCheck){
+		impl.serverObj = (Server) registry.lookup(Constant.RMIID);
+		impl.initLoginFrame();
+	/*	while(!impl.playerAddCheck){
 			Thread.sleep(100);
 		}
 		
-		while(impl.hasGamestarted){
+		while(!impl.hasGamestarted){
 			Thread.sleep(100);
+		}*/
+		//if(impl.hasGamestarted){
+		if(true){
+			System.out.println("Player added.. Game has started");
+		   // impl.createGameWindow();
+			impl.playerPostionMap= impl.serverObj.getPlayerPostionMap();	
+			impl.playerScoreMap = impl.serverObj.getPlayerScoreMap();
+			impl.treasureMap = impl.serverObj.getTreasureMap();
+			impl.readButtons();
+		
 		}
 		
-	    impl.displayMaze(impl.gameInfo);
+		
+	   
+		//impl.gameInfo = impl.serverObj.fetchPlayerInfo();
+			//impl.displayMaze(impl.gameInfo);
+	   
 	    
 	    
 		
@@ -152,12 +188,80 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 		
 		
 	}
+	
+	private  void readButtons() {
+		// TODO Auto-generated method stub
+		
+		System.out.println("Game has started .. Please click the below buttons to start playing the game...\n"+
+		                         "You are currently at position (0,0)");
+		//panel.addKeyListener(new keyb());
+		 
+		 
+		
+		
+			
+		
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		//System.out.println("Here");
+		try{
+            boolean moved = false;
+			playerPostionMap= this.serverObj.getPlayerPostionMap();	
+			Coordinate c = playerPostionMap.get(userId);
+			if(e.getKeyCode()==KeyEvent.VK_UP){
+				System.out.println("UP");
+				c.setRow(c.getRow()+1);
+				c.setColumn(c.getColumn());
+				moved = this.serverObj.moveUser(userId, c);
+				if(moved){
+				displayupdatedMaze();
+				}
+			}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
+				System.out.println("DOWN");
+				c.setRow(c.getRow()-1);
+				c.setColumn(c.getColumn());
+				moved = this.serverObj.moveUser(userId, c);
+				if(moved){
+				displayupdatedMaze();
+				}
+			}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){    
+				System.out.println("RIGHT");
+				c.setRow(c.getRow());
+				c.setColumn(c.getColumn()+1);
+				moved = this.serverObj.moveUser(userId, c);
+				if(moved){
+				displayupdatedMaze();
+				}
+			}else if(e.getKeyCode()==KeyEvent.VK_LEFT){
+				System.out.println("LEFT");
+				c.setRow(c.getRow());
+				c.setColumn(c.getColumn()-1);
+				moved = this.serverObj.moveUser(userId, c);
+				if(moved){
+				displayupdatedMaze();
+				}
+			}
+			}catch(Exception e1){
+
+		}
+	}
 
 	
-	private void displayMaze(GameInfo gameInfo2) {
+	private void displayupdatedMaze() {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public void notifyPlayer(boolean hasGameStarted){
+		
+		this.hasGamestarted = true;
+	}
+
+	
+	
 
 	public void notifyGameStarted(GameInfo gameinfo){
 		this.gameInfo = gameinfo;
@@ -168,6 +272,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 	@Override
 	public void actionPerformed(ActionEvent buttonClick) {
 		// TODO Auto-generated method stub
+		System.out.println("Inside Action");
 		JLabel errors = new JLabel();
 		errors.setBounds(20, 130, 480, 80);
 		errors.setForeground(Color.RED);	
@@ -191,9 +296,11 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 				// when the login button is clicked, this method is invoked
 				if("login".equals(button.getActionCommand())){
 					try {
-						if(this.serverObj.addUser(userName, password)){
-						//if(true){
+						System.out.println(this.serverObj.addUser(userName, password,this));
+						//if(this.serverObj.addUser(userName, password,this)){
+						if(true){
 						System.out.println("Login Successful");
+						    
 							this.userId = this.userNameField.getText();
 							for(Component component : panel.getComponents()){
 								panel.remove(component);
@@ -203,10 +310,19 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 							welcomeUser.setVisible(true);
 							welcomeUser.setBounds(0, 0, 500, 15);
 							panel.add(welcomeUser);
+							keyboardEntry.setLocation(0, 40);
+							keyboardEntry.setBounds(150, 40, 160, 20);
+							keyboardEntry.setVisible(true);
+							keyboardEntry.addKeyListener(this);
+							panel.add(keyboardEntry);		
 							panel.repaint();
+							this.playerAddCheck= true;
 						}else{
 							JOptionPane.showMessageDialog(null,
-					                "Please enter the correct password");
+					                "Login failed !!\n"
+					                + "Reasons:"
+					                + " 1.User Exists."
+					                + " 2.Wrong Password.");
 						}
 					}catch(Exception e){
 
@@ -214,6 +330,24 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener, S
 				}
 			}
 		}
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

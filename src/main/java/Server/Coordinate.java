@@ -9,8 +9,8 @@ public class Coordinate implements Serializable {
 	 */
 	private static final long serialVersionUID = 3205049466478759683L;
 
-	private int row;
-	private int column;
+	public  int row;
+	public  int column;
 	
 	
 	public Coordinate(int row, int column) {
@@ -19,14 +19,32 @@ public class Coordinate implements Serializable {
 		this.column = column;
 	}
 	
-	int getRow() {
-		return this.row;
-	}
 	
-	int getColumn() {
-		return this.column;
-	}
 	
+	public int getRow() {
+		return row;
+	}
+
+
+
+	public void setRow(int row) {
+		this.row = row;
+	}
+
+
+
+	public int getColumn() {
+		return column;
+	}
+
+
+
+	public void setColumn(int column) {
+		this.column = column;
+	}
+
+
+
 	@Override
 	public boolean equals(Object o){	
 	  Coordinate obj = (Coordinate) o;

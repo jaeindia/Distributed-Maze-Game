@@ -20,19 +20,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
-
-import org.apache.commons.lang3.StringUtils;
-
-
-
-
-
-
 
 //import server.CoordinatesUtil;
 import Server.Coordinate;
@@ -60,11 +53,13 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	public JLabel password = new JLabel("PASSWORD",JLabel.LEFT);
 	public JTextField userNameField = new JTextField();
 	public JPasswordField passwordField = new JPasswordField();
+	public JLabel mazeField = new JLabel("MAZE",JLabel.LEFT);
 	public JButton logIn = new JButton();
 	public JButton signUp = new JButton();
     public int gridSize=5;
     public boolean playerAddCheck=false;
     public boolean hasGamestarted = false;
+    public boolean hasGameEnded = false;
     private GameInfo gameInfo = null;
     private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
 	
@@ -153,30 +148,21 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	/*	while(!impl.playerAddCheck){
 			Thread.sleep(100);
 		}
-		
+		*/
 		while(!impl.hasGamestarted){
 			Thread.sleep(100);
-		}*/
+		}
 		//if(impl.hasGamestarted){
+		
 		if(true){
 			System.out.println("Player added.. Game has started");
-		   // impl.createGameWindow();
+		    impl.displayupdatedMaze();
 			impl.playerPostionMap= impl.serverObj.getPlayerPostionMap();	
 			impl.playerScoreMap = impl.serverObj.getPlayerScoreMap();
 			impl.treasureMap = impl.serverObj.getTreasureMap();
 			impl.readButtons();
-		
-		}
-		
-		
-	   
-		//impl.gameInfo = impl.serverObj.fetchPlayerInfo();
-			//impl.displayMaze(impl.gameInfo);
-	   
-	    
-	    
-		
-	}catch(Exception ee){
+			}
+		}catch(Exception ee){
 			System.err.println("Error Initializing the game !! Game will exit now...");
 			JOptionPane.showMessageDialog(null,
 	                "Error Initializing the game !! Game will Exit now");
@@ -191,6 +177,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	
 	private  void readButtons() {
 		// TODO Auto-generated method stub
+		
 		
 		System.out.println("Game has started .. Please click the below buttons to start playing the game...\n"+
 		                         "You are currently at position (0,0)");
@@ -215,8 +202,8 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				System.out.println("UP");
 				c.setRow(c.getRow()+1);
 				c.setColumn(c.getColumn());
-				moved = this.serverObj.moveUser(userId, c);
-				if(moved){
+				//moved = this.serverObj.moveUser(userId, c);
+				if(true){
 				displayupdatedMaze();
 				}
 			}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
@@ -240,7 +227,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()-1);
 				moved = this.serverObj.moveUser(userId, c);
-				if(moved){
+				if(true){
 				displayupdatedMaze();
 				}
 			}
@@ -252,7 +239,70 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	
 	private void displayupdatedMaze() {
 		// TODO Auto-generated method stub
+		playerPostionMap.put("abhinav", new Coordinate(2, 2));
+		playerPostionMap.put("sarja", new Coordinate(4, 0));
+		treasureMap.put(new Coordinate(3,2), 2);
+		treasureMap.put(new Coordinate(4,3), 3);
+		//Set<String> playerSet = playerPostionMap.keySet();
+		System.out.println("************************************\n");
 		
+			
+			for (int i =0;i<this.gridSize;i++){
+			for(int j=0;j<this.gridSize;j++){
+				String present = entityCheck(i,j);
+				//System.out.println(present);
+				if(present!=null){
+					System.out.print(padString(present,10));
+				}else{
+					System.out.print(padString("_____",10));
+				}
+				//System.out.print();
+				
+			}
+			
+			System.out.println();
+			System.out.println();
+		
+		}
+		System.out.println("************************************\n");		          
+		
+	}
+
+	private String entityCheck(int i, int j) {
+		// TODO Auto-generated method stub
+		String present = null;
+		//System.out.println(i+","+j);
+		try{
+		
+		Set<String> playerSet = playerPostionMap.keySet();
+		Iterator itr = playerSet.iterator();
+		while(itr.hasNext()){
+			String user = itr.next().toString();
+			Coordinate c = (Coordinate)playerPostionMap.get(user);
+			if(i==c.getRow() && j==c.getColumn()){
+				//System.out.println("Player exists");
+				present = user;
+				return user;
+			}
+			
+		}
+		//System.out.println(treasureMap.size());
+		Set<Coordinate> treasureSet = treasureMap.keySet();
+		Iterator itr1 = treasureSet.iterator();
+		while(itr1.hasNext()){
+			Coordinate c = (Coordinate) itr1.next();
+			if(i==c.getRow() && j==c.getColumn()){
+				//System.out.println("treasure exists");
+				present = String.valueOf(treasureMap.get(c));
+				return present;
+				
+			}
+		}
+		}catch(Exception e){
+			System.out.println("Exception "+e.getMessage());
+			return null;
+		}
+		return present;
 	}
 
 	public void notifyPlayer(boolean hasGameStarted){
@@ -264,6 +314,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	
 
 	public void notifyGameStarted(GameInfo gameinfo){
+		System.out.println("Game started");
 		this.gameInfo = gameinfo;
 		this.hasGamestarted= true;
 		
@@ -350,5 +401,18 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		
 	}
 
+	@Override
+	public void notifyGameEnd(boolean gameEnded) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+		this.hasGameEnded = true;
+		
+	}
+
+	public static String padString(String str, int leng) {
+        for (int i = str.length(); i <= leng; i++)
+            str += " ";
+        return str;
+    }
 
 }

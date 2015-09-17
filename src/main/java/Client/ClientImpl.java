@@ -22,10 +22,22 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
+
+import org.apache.commons.lang3.StringUtils;
+
+
+
+
+
+
+
+
+
 
 //import server.CoordinatesUtil;
 import Server.Coordinate;
@@ -156,10 +168,11 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		
 		if(true){
 			System.out.println("Player added.. Game has started");
-		    impl.displayupdatedMaze();
+		   
 			impl.playerPostionMap= impl.serverObj.getPlayerPostionMap();	
 			impl.playerScoreMap = impl.serverObj.getPlayerScoreMap();
 			impl.treasureMap = impl.serverObj.getTreasureMap();
+			impl.displayupdatedMaze();
 			impl.readButtons();
 			}
 		}catch(Exception ee){
@@ -200,35 +213,48 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 			Coordinate c = playerPostionMap.get(userId);
 			if(e.getKeyCode()==KeyEvent.VK_UP){
 				System.out.println("UP");
-				c.setRow(c.getRow()+1);
+				c.setRow(c.getRow()-1);
 				c.setColumn(c.getColumn());
-				//moved = this.serverObj.moveUser(userId, c);
-				if(true){
+				System.out.println(c.toString());
+				moved = this.serverObj.moveUser(userId, c);
+				System.out.println("Move is "+moved);
+				if(moved){
 				displayupdatedMaze();
+				}else{
+					System.out.println("Cannot Move");
 				}
 			}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
 				System.out.println("DOWN");
-				c.setRow(c.getRow()-1);
+				c.setRow(c.getRow()+1);
 				c.setColumn(c.getColumn());
+				System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
+				}else{
+					System.out.println("Cannot Move");
 				}
 			}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){    
 				System.out.println("RIGHT");
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()+1);
+				System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
+				}else{
+					System.out.println("Cannot Move");
 				}
 			}else if(e.getKeyCode()==KeyEvent.VK_LEFT){
 				System.out.println("LEFT");
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()-1);
+				System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
-				if(true){
+				if(moved){
 				displayupdatedMaze();
+				}else{
+					System.out.println("Cannot Move");
 				}
 			}
 			}catch(Exception e1){
@@ -239,12 +265,12 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	
 	private void displayupdatedMaze() {
 		// TODO Auto-generated method stub
-		playerPostionMap.put("abhinav", new Coordinate(2, 2));
-		playerPostionMap.put("sarja", new Coordinate(4, 0));
-		treasureMap.put(new Coordinate(3,2), 2);
-		treasureMap.put(new Coordinate(4,3), 3);
+		//playerPostionMap.put("abhinav", new Coordinate(2, 2));
+		//playerPostionMap.put("sarja", new Coordinate(4, 0));
+		//treasureMap.put(new Coordinate(3,2), 2);
+		//treasureMap.put(new Coordinate(4,3), 3);
 		//Set<String> playerSet = playerPostionMap.keySet();
-		System.out.println("************************************\n");
+		System.out.println("***********************************************\n");
 		
 			
 			for (int i =0;i<this.gridSize;i++){
@@ -264,7 +290,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 			System.out.println();
 		
 		}
-		System.out.println("************************************\n");		          
+		System.out.println("************************************************\n");		          
 		
 	}
 
@@ -307,18 +333,20 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 
 	public void notifyPlayer(boolean hasGameStarted){
 		
+		System.out.println("Game has started");
 		this.hasGamestarted = true;
 	}
 
-	
-	
-
-	public void notifyGameStarted(GameInfo gameinfo){
-		System.out.println("Game started");
-		this.gameInfo = gameinfo;
-		this.hasGamestarted= true;
+	@Override
+	public void notifyGameEnd(boolean gameEnded) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+		this.hasGameEnded = true;
 		
 	}
+	
+
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent buttonClick) {
@@ -345,11 +373,13 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				panel.repaint();
 			}else{
 				// when the login button is clicked, this method is invoked
+				
 				if("login".equals(button.getActionCommand())){
 					try {
-						System.out.println(this.serverObj.addUser(userName, password,this));
-						//if(this.serverObj.addUser(userName, password,this)){
-						if(true){
+						
+						//System.out.println("Output :"+this.serverObj.addUser(userName, password,this));
+						if(this.serverObj.addUser(userName, password,this)){
+						//if(true){
 						System.out.println("Login Successful");
 						    
 							this.userId = this.userNameField.getText();
@@ -401,13 +431,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		
 	}
 
-	@Override
-	public void notifyGameEnd(boolean gameEnded) throws RemoteException {
-		// TODO Auto-generated method stub
-		
-		this.hasGameEnded = true;
-		
-	}
+	
 
 	public static String padString(String str, int leng) {
         for (int i = str.length(); i <= leng; i++)

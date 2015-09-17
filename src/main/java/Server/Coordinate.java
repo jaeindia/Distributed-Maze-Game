@@ -4,6 +4,13 @@ import java.io.Serializable;
 
 public class Coordinate implements Serializable {
 
+	@Override
+	public String toString() {
+		return "Coordinate [row=" + row + ", column=" + column + "]";
+	}
+
+
+
 	/**
 	 * 
 	 */

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 
 import Client.Client;
 
@@ -55,7 +56,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
+			System.out.println("flag is "+flag);
 			if (!flag) {
+				System.out.println("User is added ");
 				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
 				gameInfoObj.setPlayerObjectMap(username, clientObj);
 			}
@@ -63,7 +66,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		System.out.println("add user");
 		System.out.println(gameInfoObj.getPlayerPostionMap());
-		
+		System.out.println(gameInfoObj.getPlayerObjectMap().size());
 		return !flag;
 	}
 
@@ -72,26 +75,35 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		Map<String,Coordinate> playerPositionMap = gameInfoObj.getPlayerPostionMap();
-		
+		boolean moved = true;
 		// Check first if the user actually exists
-		if (!gameInfoObj.doesUserExist(username, "TestGame")) {
-			return false;
+		if (!gameInfoObj.getPlayerPostionMap().containsKey(username)) {
+			System.out.println("User does not exist");
+			moved = false;
+			
 		}
-		
+		System.out.println(coordinate.getRow()+", "+coordinate.getColumn()+","+ gridSize);
 		// Check for valid coordinates
-		if (!(coordinate.getRow() >= 0 && coordinate.getRow() < gridSize
-				&& coordinate.getColumn() >= 0 && coordinate.getColumn() < gridSize)) {
-			return false;
+		gridSize=5;
+		if (coordinate.getRow() < 0 || coordinate.getRow() > gridSize-1
+				|| coordinate.getColumn() < 0 || coordinate.getColumn() > gridSize-1) {
+			System.out.println("Wrong Corodinates");
+			moved= false;
 		}
 		
 		// Search logic for the 1-1 position map
+		if(playerPositionMap != null){
 		for (Entry<String, Coordinate> entry : playerPositionMap.entrySet()) {
+			
 			if (Objects.equals(coordinate, entry.getValue())) {
-	            return false;
+				System.out.println("Player is [present in the coordinate");
+	            moved = false;
 	        }
 	    }
-		
+		}
 		// Update position
+		System.out.println("Moved  here is "+moved);
+		if(moved){
 		gameInfoObj.setPlayerPostionMap(username, coordinate);
 		// Update treasure count map
 		if (gameInfoObj.updateTreasureMap(coordinate) == 1 
@@ -119,8 +131,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		System.out.println(gameInfoObj.getPlayerPostionMap());
 		
 		System.out.println("Treasure map");
-		
-		return true;
+		}
+		return moved;
 	}
 
 	@Override
@@ -173,11 +185,15 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 			// Populate Treasure Map - hard coded
 			gameInfoObj.populateTreasureMap();
 			
-			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+			Set<String> userSet = gameInfoObj.getPlayerObjectMap().keySet();
+			Iterator clientObjectIterator = userSet.iterator();
+			System.out.println("Size is "+userSet.size());
 			while (clientObjectIterator.hasNext()) {
-				Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+				String user = (String) clientObjectIterator.next();
+				
+				Client c = (Client) gameInfoObj.getPlayerObjectMap().get(user);
 				try {
-					clientObjectEntry.getValue().notifyPlayer(true);
+					c.notifyPlayer(true);
 				} 
 				catch (RemoteException e) {
 					// TODO Auto-generated catch block

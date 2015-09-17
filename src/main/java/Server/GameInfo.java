@@ -50,13 +50,15 @@ public class GameInfo implements Serializable{
 	boolean doesUserExist(String username, String password) {
 		// TODO Auto-generated method stub
 		
+		boolean exists = false;
 		if (password.equals("TestGame") 
 				&& !playerPostionMap.containsKey(username.toLowerCase()) ) {
-			return false;
+			exists = true;
 		}
 		
-		return true;
-	}
+		return exists;
+	
+		}
 	
 	void populateTreasureMap() {				
 		int row = 0;
@@ -137,6 +139,7 @@ public class GameInfo implements Serializable{
 	}
 
 	public void setPlayerObjectMap(String username, Client clientObj) {
-		this.playerObjectMap.put(username, clientObj);
+		System.out.println(username + ","+clientObj);
+		playerObjectMap.put(username, clientObj);
 	}
 }

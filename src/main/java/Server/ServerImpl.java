@@ -22,6 +22,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	private GameInfo gameInfoObj;
 	private int gridSize;
 	private int timeToStart;
+	private int timeToStartVal;
 	
 	public ServerImpl() throws RemoteException {
 		// TODO Auto-generated constructor stub
@@ -32,7 +33,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		gameInfoObj.setTreasureCount(10);
 		
 		gridSize = gameInfoObj.getGridSize();
-		timeToStart = 20; // Time to start the game - hard coded
+		timeToStart = 5; // Time to start the game - hard coded
+		timeToStartVal = 5;
 	}
 	
 	public static void main(String[] args) throws RemoteException, AlreadyBoundException {
@@ -55,10 +57,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 //			System.out.println("add user flag " + flag);
 			if (!flag) {
 				System.out.println("User is added ");
-				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
-				gameInfoObj.setPlayerObjectMap(username, clientObj);
+				gameInfoObj.setPlayerPostionMap(username.toLowerCase(), new Coordinate(0, 0));
+				gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
-				if(this.timeToStart == 20){
+				if(this.timeToStart == this.timeToStartVal){
 					Thread t = new Thread(this);
 					t.start();
 				}
@@ -108,13 +110,13 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		if(moved){
 			gameInfoObj.setPlayerPostionMap(username, coordinate);
 			// Update treasure count map
-			if (gameInfoObj.updateTreasureMap(coordinate) == 1 
-					|| gameInfoObj.updateTreasureMap(coordinate) == -1) {
-				// Update user - treasure count
-				gameInfoObj.updatePlayerScoreMap(username);
-			}
+//			if (gameInfoObj.updateTreasureMap(username, coordinate) == 1 
+//					|| gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
+//				// Update user - treasure count
+////				gameInfoObj.updatePlayerScoreMap(username);
+//			}
 		
-			if (gameInfoObj.updateTreasureMap(coordinate) == -1) {
+			if (gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
 				// Update user - End Game
 				Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				while (clientObjectIterator.hasNext()) {

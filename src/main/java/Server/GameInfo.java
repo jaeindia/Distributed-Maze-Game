@@ -86,7 +86,7 @@ public class GameInfo implements Serializable{
 
 	}
 	
-	int updateTreasureMap(Coordinate coordinate) {
+	int updateTreasureMap(String username, Coordinate coordinate) {
 //		System.out.println("OUT");
 //		System.out.println(coordinate.getRow()+", "+coordinate.getColumn());
 //		System.out.println("hashcode" + coordinate.hashCode());
@@ -99,6 +99,8 @@ public class GameInfo implements Serializable{
 		this.treasureMap.containsKey(coordinate);
 		if (this.treasureMap.containsKey(coordinate) && this.treasureMap.get(coordinate) != 0) {
 //			System.out.println("IN");
+//			System.out.println("Treasure Counter" + this.treasureCounter);
+			this.updatePlayerScoreMap(username, this.treasureMap.get(coordinate));
 			this.treasureCounter -= this.treasureMap.get(coordinate);
 			this.treasureMap.remove(coordinate);
 			
@@ -117,15 +119,19 @@ public class GameInfo implements Serializable{
 		return 0;
 	}
 	
-	boolean updatePlayerScoreMap(String username) {
-		if (this.playerScoreMap.containsKey(username)) {
-			this.playerScoreMap.put(username, this.playerScoreMap.get(username) + 1);
-			System.out.println("Player Score Map");
-			System.out.println(playerScoreMap);
+	boolean updatePlayerScoreMap(String username, int score) {
+//		System.out.println("Inside update player score map" + username + " " + score);
+		if (!this.playerScoreMap.containsKey(username.toLowerCase())) {
+//			System.out.println("1st time");
+			this.playerScoreMap.put(username.toLowerCase(), score);
 		} 
-		else { 
-			this.playerScoreMap.put(username, 1);
+		else {
+			this.playerScoreMap.put(username.toLowerCase(), 
+			this.playerScoreMap.get(username.toLowerCase()) + score);
 		}
+		
+		System.out.println("Player Score Map");
+		System.out.println(playerScoreMap);
 		
 		return true;
 	}
@@ -152,7 +158,7 @@ public class GameInfo implements Serializable{
 	}
 
 	public void setPlayerObjectMap(String username, Client clientObj) {
-		System.out.println(username + ","+clientObj);
-		playerObjectMap.put(username, clientObj);
+//		System.out.println(username + ","+clientObj);
+		playerObjectMap.put(username.toLowerCase(), clientObj);
 	}
 }

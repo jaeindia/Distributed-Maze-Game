@@ -3,7 +3,9 @@ package Server;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Client.Client;
@@ -50,15 +52,15 @@ public class GameInfo implements Serializable{
 	boolean doesUserExist(String username, String password) {
 		// TODO Auto-generated method stub
 		
-		boolean exists = false;
+		boolean exists = true;
 		if (password.equals("TestGame") 
 				&& !playerPostionMap.containsKey(username.toLowerCase()) ) {
-			exists = true;
+			exists = false;
 		}
 		
 		return exists;
 	
-		}
+	}
 	
 	void populateTreasureMap() {				
 		int row = 0;
@@ -85,16 +87,27 @@ public class GameInfo implements Serializable{
 	}
 	
 	int updateTreasureMap(Coordinate coordinate) {
+//		System.out.println("OUT");
+//		System.out.println(coordinate.getRow()+", "+coordinate.getColumn());
+//		System.out.println("hashcode" + coordinate.hashCode());
+//		System.out.println("flag " + this.treasureMap.containsKey(coordinate));
+//		for (Entry<Coordinate, Integer> entry : this.treasureMap.entrySet()) {		
+//			if (Objects.equals(coordinate, entry.getValue())) {
+//				System.out.println("match found");
+//	        }
+//	    }
+		this.treasureMap.containsKey(coordinate);
 		if (this.treasureMap.containsKey(coordinate) && this.treasureMap.get(coordinate) != 0) {
-			this.treasureMap.put(coordinate, this.treasureMap.get(coordinate) - 1);
-			this.treasureCounter --;
+//			System.out.println("IN");
+			this.treasureCounter -= this.treasureMap.get(coordinate);
+			this.treasureMap.remove(coordinate);
 			
 			if (treasureCounter == 0) {
 				return -1;
 			}
 			
-			System.out.println("Treasure Map");
-			System.out.println(treasureMap);
+//			System.out.println("Treasure Map Update");
+//			System.out.println(this.treasureMap);
 			
 			// Return true if the treasure is found 
 			return 1;

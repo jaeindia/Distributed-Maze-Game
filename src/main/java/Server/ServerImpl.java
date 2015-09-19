@@ -27,6 +27,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		// TODO Auto-generated constructor stub
 		super();
 		gameInfoObj = new GameInfo();
+		// Set gridSize and treasureCount
+		gameInfoObj.setGridSize(5);
+		gameInfoObj.setTreasureCount(10);
+		
 		gridSize = gameInfoObj.getGridSize();
 		timeToStart = 20; // Time to start the game - hard coded
 	}
@@ -56,7 +60,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
-			System.out.println("flag is "+flag);
+//			System.out.println("add user flag " + flag);
 			if (!flag) {
 				System.out.println("User is added ");
 				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
@@ -64,9 +68,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 			}
 		}
 		
-		System.out.println("add user");
-		System.out.println(gameInfoObj.getPlayerPostionMap());
-		System.out.println(gameInfoObj.getPlayerObjectMap().size());
+//		System.out.println("add user");
+//		System.out.println(gameInfoObj.getPlayerPostionMap());
+//		System.out.println(gameInfoObj.getPlayerObjectMap().size());
 		return !flag;
 	}
 
@@ -77,14 +81,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		Map<String,Coordinate> playerPositionMap = gameInfoObj.getPlayerPostionMap();
 		boolean moved = true;
 		// Check first if the user actually exists
-		if (!gameInfoObj.getPlayerPostionMap().containsKey(username)) {
+		if (!gameInfoObj.doesUserExist(username, "TestGame")) {
 			System.out.println("User does not exist");
 			moved = false;
-			
 		}
-		System.out.println(coordinate.getRow()+", "+coordinate.getColumn()+","+ gridSize);
+//		System.out.println(coordinate.getRow()+", "+coordinate.getColumn()+","+ gridSize);
 		// Check for valid coordinates
-		gridSize=5;
 		if (coordinate.getRow() < 0 || coordinate.getRow() > gridSize-1
 				|| coordinate.getColumn() < 0 || coordinate.getColumn() > gridSize-1) {
 			System.out.println("Wrong Corodinates");
@@ -93,44 +95,39 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		// Search logic for the 1-1 position map
 		if(playerPositionMap != null){
-		for (Entry<String, Coordinate> entry : playerPositionMap.entrySet()) {
-			
-			if (Objects.equals(coordinate, entry.getValue())) {
-				System.out.println("Player is [present in the coordinate");
-	            moved = false;
-	        }
-	    }
+			for (Entry<String, Coordinate> entry : playerPositionMap.entrySet()) {
+				
+				if (Objects.equals(coordinate, entry.getValue())) {
+					System.out.println("Another player is present in the coordinate");
+		            moved = false;
+		        }
+		    }
 		}
 		// Update position
-		System.out.println("Moved  here is "+moved);
+		System.out.println("moved flag value " + moved);
 		if(moved){
-		gameInfoObj.setPlayerPostionMap(username, coordinate);
-		// Update treasure count map
-		if (gameInfoObj.updateTreasureMap(coordinate) == 1 
-				|| gameInfoObj.updateTreasureMap(coordinate) == -1) {
-			// Update user - treasure count
-			gameInfoObj.updatePlayerScoreMap(username);
-		}
+			gameInfoObj.setPlayerPostionMap(username, coordinate);
+			// Update treasure count map
+			if (gameInfoObj.updateTreasureMap(coordinate) == 1 
+					|| gameInfoObj.updateTreasureMap(coordinate) == -1) {
+				// Update user - treasure count
+				gameInfoObj.updatePlayerScoreMap(username);
+			}
 		
-		if (gameInfoObj.updateTreasureMap(coordinate) == -1) {
-			// Update user - End Game
-			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-			while (clientObjectIterator.hasNext()) {
-				Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
-				try {
-					clientObjectEntry.getValue().notifyGameEnd(true);
-				} 
-				catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if (gameInfoObj.updateTreasureMap(coordinate) == -1) {
+				// Update user - End Game
+				Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				while (clientObjectIterator.hasNext()) {
+					Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+					try {
+						clientObjectEntry.getValue().notifyGameEnd(true);
+					} 
+					catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
-		}
-		
-		System.out.println("move user");
-		System.out.println(gameInfoObj.getPlayerPostionMap());
-		
-		System.out.println("Treasure map");
 		}
 		return moved;
 	}
@@ -179,21 +176,36 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		}
 		
 		if (this.timeToStart == 0) {
-			// Set gridSize and treasureCount
-			gameInfoObj.setGridSize(5);
-			gameInfoObj.setTreasureCount(10);
 			// Populate Treasure Map - hard coded
 			gameInfoObj.populateTreasureMap();
 			
-			Set<String> userSet = gameInfoObj.getPlayerObjectMap().keySet();
-			Iterator clientObjectIterator = userSet.iterator();
-			System.out.println("Size is "+userSet.size());
+			
+//			Set<String> userSet = gameInfoObj.getPlayerObjectMap().keySet();
+//			Iterator clientObjectIterator = userSet.iterator();
+//			System.out.println("Size is "+userSet.size());
+//			while (clientObjectIterator.hasNext()) {
+//				String user = (String) clientObjectIterator.next();
+//				
+//				Client c = (Client) gameInfoObj.getPlayerObjectMap().get(user);
+//				try {
+//					c.notifyPlayer(true);
+//				} 
+//				catch (RemoteException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+			
+//			for (Map.Entry<Coordinate, Integer> entry : gameInfoObj.getTreasureMap().entrySet()) {
+//			    Coordinate key = entry.getKey();
+//			    System.out.println(key.getRow() + "," + key.getColumn() + " " + key.hashCode());
+//			}
+			
+			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 			while (clientObjectIterator.hasNext()) {
-				String user = (String) clientObjectIterator.next();
-				
-				Client c = (Client) gameInfoObj.getPlayerObjectMap().get(user);
+				Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
 				try {
-					c.notifyPlayer(true);
+					clientObjectEntry.getValue().notifyPlayer(true);
 				} 
 				catch (RemoteException e) {
 					// TODO Auto-generated catch block

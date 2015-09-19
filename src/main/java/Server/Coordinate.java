@@ -2,6 +2,8 @@ package Server;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 public class Coordinate implements Serializable {
 
 	@Override
@@ -51,12 +53,22 @@ public class Coordinate implements Serializable {
 	}
 
 
+	@Override
+    public int hashCode() {
+        return new HashCodeBuilder(11, 37). // 2 randomly chosen prime numbers
+            // if deriving: appendSuper(super.hashCode()).
+            append(this.getRow()).
+            append(this.getColumn()).
+            toHashCode();
+    }	
 
 	@Override
 	public boolean equals(Object o){	
 	  Coordinate obj = (Coordinate) o;
 		boolean equal = false;
-		if(obj.row==this.row && obj.column==this.column){
+//		System.out.println(obj.row +"-"+ this.row+","+obj.column+"-"+this.column);
+//		System.out.println(obj.getRow() +"-"+ this.getRow()+","+obj.getColumn()+"-"+this.getColumn());
+		if(obj.getRow()==this.getRow() && obj.getColumn()==this.getColumn()){
 			equal = true;
 		}
 		return equal;

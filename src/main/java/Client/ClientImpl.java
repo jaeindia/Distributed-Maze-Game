@@ -313,6 +313,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 			
 		}
 		//System.out.println(treasureMap.size());
+		treasureMap = this.serverObj.getTreasureMap();
 		Set<Coordinate> treasureSet = treasureMap.keySet();
 		Iterator itr1 = treasureSet.iterator();
 		while(itr1.hasNext()){

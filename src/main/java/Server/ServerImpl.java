@@ -50,14 +50,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		boolean flag = true;
 		
-		if(this.timeToStart == 20){
-			Thread t = new Thread(this);
-			t.start();
-		}
-		else if(this.timeToStart == 0){
-			return false;
-		}
-		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
 //			System.out.println("add user flag " + flag);
@@ -65,6 +57,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 				System.out.println("User is added ");
 				gameInfoObj.setPlayerPostionMap(username, new Coordinate(0, 0));
 				gameInfoObj.setPlayerObjectMap(username, clientObj);
+				
+				if(this.timeToStart == 20){
+					Thread t = new Thread(this);
+					t.start();
+				}
+				else if(this.timeToStart == 0){
+					return false;
+				}
 			}
 		}
 		

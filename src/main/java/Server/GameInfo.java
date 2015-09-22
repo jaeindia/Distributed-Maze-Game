@@ -42,11 +42,14 @@ public class GameInfo implements Serializable{
 	}
 	
 	Map<String, Integer> getPlayerScoreMap() {
+		
+		System.out.println("Size in Server is "+playerScoreMap.size());
+		
 		return playerScoreMap;
 	}
 
 	void setPlayerPostionMap(String username, Coordinate coordinate) {
-		this.playerPostionMap.put(username.toLowerCase(), coordinate);
+		playerPostionMap.put(username.toLowerCase(), coordinate);
 	}
 	
 	boolean doesUserExist(String username, String password) {

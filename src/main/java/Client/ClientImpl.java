@@ -20,6 +20,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.*;
 
 import org.apache.commons.lang3.StringUtils;
+
 
 
 
@@ -206,16 +208,24 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
-		//System.out.println("Here");
+		System.out.println("Here");
+		if(!checkGameEnded()){
 		try{
             boolean moved = false;
 			playerPostionMap= this.serverObj.getPlayerPostionMap();	
+			System.out.println(playerPostionMap.size());
 			Coordinate c = playerPostionMap.get(userId);
+			if(c!=null){
+			System.out.println(c.toString());
+			}else {
+				System.out.println("c is null");
+			}
 			if(e.getKeyCode()==KeyEvent.VK_UP){
 				System.out.println("UP");
 				c.setRow(c.getRow()-1);
 				c.setColumn(c.getColumn());
-				System.out.println(c.toString());
+				
+				System.out.println("Move is "+moved);
 				moved = this.serverObj.moveUser(userId, c);
 				System.out.println("Move is "+moved);
 				if(moved){
@@ -227,7 +237,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				System.out.println("DOWN");
 				c.setRow(c.getRow()+1);
 				c.setColumn(c.getColumn());
-				System.out.println(c.toString());
+				//System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
@@ -238,7 +248,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				System.out.println("RIGHT");
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()+1);
-				System.out.println(c.toString());
+				//System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
@@ -249,7 +259,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				System.out.println("LEFT");
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()-1);
-				System.out.println(c.toString());
+				//System.out.println(c.toString());
 				moved = this.serverObj.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
@@ -258,11 +268,43 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 				}
 			}
 			}catch(Exception e1){
-
+                 System.out.println(e1.getMessage());
 		}
+		}else{
+			System.out.println("Game has ended");
+			try{
+			playerScoreMap = serverObj.getPlayerScoreMap();
+			System.out.println("***********************************************");
+			System.out.println("FINAL SCORES\n");
+			Set<String> scores = new HashSet<String>();
+			scores = playerScoreMap.keySet();
+			Iterator scoreIterator = scores.iterator();
+			System.out.println(scores.size());
+			while(scoreIterator.hasNext()){
+				String user = (String) scoreIterator.next();
+				System.out.print(user+" - ");
+				System.out.println(playerScoreMap.get(user));
+			}
+		
+			}catch(Exception mm){
+				
+			}
+			
+			}
 	}
 
 	
+	
+
+	private boolean checkGameEnded() {
+		// TODO Auto-generated method stub
+		this.hasGameEnded= false;
+		if(treasureMap.size()==0){
+			this.hasGameEnded=true;
+		}
+		return this.hasGameEnded;
+	}
+
 	private void displayupdatedMaze() {
 		// TODO Auto-generated method stub
 		//playerPostionMap.put("abhinav", new Coordinate(2, 2));

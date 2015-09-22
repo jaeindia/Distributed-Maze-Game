@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.Set;
 
 import Client.Client;
@@ -44,6 +45,16 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		registry.bind(Constant.RMIID, serverImplObj);
 
 		System.out.println("Server Started ...\n");
+		
+		
+		Scanner in = new Scanner(System.in);
+		System.out.println("Enter the gridSize..");
+		String gridSize = in.nextLine();
+		serverImplObj.gridSize=Integer.parseInt(gridSize);
+		System.out.println("GridSize is "+gridSize);
+		
+		
+		
 	}	
 
 	public synchronized boolean addUser(String username, String password, Client clientObj)
@@ -80,6 +91,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	public synchronized boolean moveUser(String username, Coordinate coordinate)
 			throws RemoteException {
 		// TODO Auto-generated method stub
+		
+		System.out.println("Inside Move "+coordinate.getRow()+","+coordinate.getColumn());
 		Map<String,Coordinate> playerPositionMap = gameInfoObj.getPlayerPostionMap();
 		boolean moved = true;
 		// Check first if the user actually exists
@@ -155,6 +168,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	@Override
 	public synchronized Map<String, Integer> getPlayerScoreMap() throws RemoteException {
 		// TODO Auto-generated method stub
+		System.out.println("Size of Scoer Map is "+gameInfoObj.getPlayerScoreMap().size());
 		return gameInfoObj.getPlayerScoreMap();
 	}
 

@@ -3,9 +3,7 @@ package Server;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Client.Client;
@@ -163,5 +161,15 @@ public class GameInfo implements Serializable{
 	public void setPlayerObjectMap(String username, Client clientObj) {
 //		System.out.println(username + ","+clientObj);
 		playerObjectMap.put(username.toLowerCase(), clientObj);
+	}
+	
+	void clearMaps() {
+		treasureMap.clear();
+		playerObjectMap.clear();
+		playerPostionMap.clear();
+		playerScoreMap.clear();
+		
+		System.out.println("Player Object Map\n");
+		System.out.println(playerObjectMap);
 	}
 }

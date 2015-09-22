@@ -5,9 +5,6 @@ package Client;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,27 +20,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 
-import org.apache.commons.lang3.StringUtils;
-
-
-
-
-
-
-
-
-
-
-
 //import server.CoordinatesUtil;
 import Server.Coordinate;
-import Server.GameInfo;
 import Server.Server;
 
 
@@ -74,9 +57,8 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
     public boolean playerAddCheck=false;
     public boolean hasGamestarted = false;
     public boolean hasGameEnded = false;
-    private GameInfo gameInfo = null;
+    
     private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
-	
 	
 	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
 	
@@ -89,7 +71,6 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 	}
 	
 	public void initLoginFrame(){
-		Color color = Color.black;
 		gameFrame.setBackground(Color.BLUE);
 		gameFrame.setVisible(true);
 
@@ -278,7 +259,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 			System.out.println("FINAL SCORES\n");
 			Set<String> scores = new HashSet<String>();
 			scores = playerScoreMap.keySet();
-			Iterator scoreIterator = scores.iterator();
+			Iterator<String> scoreIterator = scores.iterator();
 			System.out.println(scores.size());
 			while(scoreIterator.hasNext()){
 				String user = (String) scoreIterator.next();
@@ -343,7 +324,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		try{
 		
 		Set<String> playerSet = playerPostionMap.keySet();
-		Iterator itr = playerSet.iterator();
+		Iterator<String> itr = playerSet.iterator();
 		while(itr.hasNext()){
 			String user = itr.next().toString();
 			Coordinate c = (Coordinate)playerPostionMap.get(user);
@@ -357,7 +338,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		//System.out.println(treasureMap.size());
 		treasureMap = this.serverObj.getTreasureMap();
 		Set<Coordinate> treasureSet = treasureMap.keySet();
-		Iterator itr1 = treasureSet.iterator();
+		Iterator<Coordinate> itr1 = treasureSet.iterator();
 		while(itr1.hasNext()){
 			Coordinate c = (Coordinate) itr1.next();
 			if(i==c.getRow() && j==c.getColumn()){

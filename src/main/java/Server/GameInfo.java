@@ -162,14 +162,4 @@ public class GameInfo implements Serializable{
 //		System.out.println(username + ","+clientObj);
 		playerObjectMap.put(username.toLowerCase(), clientObj);
 	}
-	
-	void clearMaps() {
-		treasureMap.clear();
-		playerObjectMap.clear();
-		playerPostionMap.clear();
-		playerScoreMap.clear();
-		
-		System.out.println("Player Object Map\n");
-		System.out.println(playerObjectMap);
-	}
 }

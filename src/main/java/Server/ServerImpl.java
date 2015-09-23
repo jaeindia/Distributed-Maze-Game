@@ -1,18 +1,17 @@
 package Server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Random;
+import java.util.Scanner;
 
 import Client.Client;
 
@@ -26,10 +25,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	private int gridSize;
 	private int timeToStart;
 	private int timeToStartVal;
-	private static BufferedReader br;
-	private char startGame;
-	private static ServerImpl serverImplObj;
-	private static Registry registry;
+	private boolean populateTreasureMap;
+	private ArrayList<Coordinate> coordinateList;
+	private int row;
+	private int column;
+	private Random random;
+	private Coordinate userCoordinate;
 	
 	public ServerImpl() throws RemoteException {
 		// TODO Auto-generated constructor stub
@@ -40,39 +41,32 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		gameInfoObj.setTreasureCount(10);
 		
 		gridSize = gameInfoObj.getGridSize();
-		timeToStart = 5; // Time to start the game - hard coded
-		timeToStartVal = 5;
+		timeToStart = 10; // Time to start the game - hard coded
+		timeToStartVal = 10;
 		
-		startGame = 'Y';
-		br = new BufferedReader(new InputStreamReader(System.in));
+		populateTreasureMap = true;
+		coordinateList = new ArrayList<Coordinate>();
+		random = new Random();
+		userCoordinate = new Coordinate(0,0);
 	}
 	
-	public static void main(String[] args) throws AlreadyBoundException, IOException {
+	public static void main(String[] args) throws RemoteException, AlreadyBoundException {
 		// TODO Auto-generated method stub
-		serverImplObj = new ServerImpl();
-		registry = LocateRegistry.createRegistry(Constant.RMIPORT);
+		ServerImpl serverImplObj = new ServerImpl();
+		Registry registry = LocateRegistry.createRegistry(Constant.RMIPORT);
 		registry.bind(Constant.RMIID, serverImplObj);
-		
+
 		System.out.println("Server Started ...\n");
 		
-		System.out.println("Enter the gridSize..\n");
-		String gridSize = br.readLine();
-		serverImplObj.gridSize = Integer.parseInt(gridSize);
-		System.out.println("GridSize is \t" + gridSize + "\n");
-	}
-	
-	public void startServer(char startGame) throws AlreadyBoundException, IOException {
-		if (startGame == 'Y') {
-			gameInfoObj.clearMaps();
-			System.out.println("Enter the gridSize..\n");
-			String gridSize = br.readLine();
-			serverImplObj.gridSize = Integer.parseInt(gridSize);
-			System.out.println("GridSize is \t" + gridSize + "\n");
-		}
-		else {
-			System.out.println("Server Connection Closed.\n");
-		}
-	}
+		
+		@SuppressWarnings("resource")
+		Scanner in = new Scanner(System.in);
+		System.out.println("Enter the gridSize..");
+		String gridSize = in.nextLine();
+		serverImplObj.gridSize=Integer.parseInt(gridSize);
+		System.out.println("GridSize is "+gridSize);		
+		
+	}	
 
 	public synchronized boolean addUser(String username, String password, Client clientObj)
 			throws RemoteException {
@@ -80,12 +74,39 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		boolean flag = true;
 		
+		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
-			System.out.println("add user flag " + flag);
+//			System.out.println("add user flag " + flag);
 			if (!flag) {
-				System.out.println("User is added ");
-				gameInfoObj.setPlayerPostionMap(username.toLowerCase(), new Coordinate(0, 0));
+				if (populateTreasureMap) {
+					// Populate Treasure Map - hard coded
+					gameInfoObj.populateTreasureMap();
+					
+//					System.out.println("populate treasure map\n");
+					
+					populateTreasureMap = false;
+					
+					for(Entry<Coordinate, Integer> entry: gameInfoObj.getTreasureMap().entrySet()) {
+//						System.out.println("Inside loop\n" + entry.getKey());
+						coordinateList.add(entry.getKey());
+//						System.out.println("Entry added\n");
+					}
+					
+//					System.out.println("Outside loop\n");
+				}
+				
+				
+//				System.out.println("User is added ");
+				
+				do{
+					row = random.nextInt(this.gridSize);
+					column = random.nextInt(this.gridSize);
+					userCoordinate = new Coordinate(row, column);
+				} while(!coordinateList.contains(userCoordinate));
+				coordinateList.add(userCoordinate);
+				
+				gameInfoObj.setPlayerPostionMap(username.toLowerCase(), userCoordinate);
 				gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
 				if(this.timeToStart == this.timeToStartVal){
@@ -105,7 +126,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	}
 
 	@Override
-	public synchronized boolean moveUser(String username, Coordinate coordinate) throws AlreadyBoundException, IOException {
+	public synchronized boolean moveUser(String username, Coordinate coordinate)
+			throws RemoteException {
 		// TODO Auto-generated method stub
 		
 		System.out.println("Inside Move "+coordinate.getRow()+","+coordinate.getColumn());
@@ -144,36 +166,19 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 //				// Update user - treasure count
 ////				gameInfoObj.updatePlayerScoreMap(username);
 //			}
-			
-				
+		
 			if (gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
 				// Update user - End Game
-				
-				try {
-					System.out.println("Final return\n");
-					return moved;
-				}
-				catch (Exception e){
-					e.printStackTrace();
-				}
-				finally {
-					System.out.println("Finally\n");
-					Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-					while (clientObjectIterator.hasNext()) {
-						Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
-						try {
-							clientObjectEntry.getValue().notifyGameEnd(true);
-						} 
-						catch (RemoteException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				while (clientObjectIterator.hasNext()) {
+					Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+					try {
+						clientObjectEntry.getValue().notifyGameEnd(true);
+					} 
+					catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					
-					System.out.println("Want to start a new game ? (Y/N)");
-					
-					startGame = br.readLine().charAt(0);
-					startServer(startGame); 
 				}
 			}
 		}
@@ -201,7 +206,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 	@Override
 	public synchronized Map<String, Integer> getPlayerScoreMap() throws RemoteException {
 		// TODO Auto-generated method stub
-		System.out.println("Size of Scoer Map is " + gameInfoObj.getPlayerScoreMap().size());
+		System.out.println("Size of Scoer Map is "+gameInfoObj.getPlayerScoreMap().size());
 		return gameInfoObj.getPlayerScoreMap();
 	}
 
@@ -224,11 +229,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 				this.timeToStart = timeToBegin;
 		}
 		
-		if (this.timeToStart == 0) {
-			// Populate Treasure Map - hard coded
-			gameInfoObj.populateTreasureMap();
-			
-			
+		if (this.timeToStart == 0) {				
 //			Set<String> userSet = gameInfoObj.getPlayerObjectMap().keySet();
 //			Iterator clientObjectIterator = userSet.iterator();
 //			System.out.println("Size is "+userSet.size());

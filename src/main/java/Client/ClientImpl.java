@@ -25,6 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 
+
+
+
 //import server.CoordinatesUtil;
 import Server.Coordinate;
 import Server.Server;
@@ -57,8 +60,8 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
     public boolean playerAddCheck=false;
     public boolean hasGamestarted = false;
     public boolean hasGameEnded = false;
-    
     private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
+	
 	
 	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
 	

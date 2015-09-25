@@ -31,26 +31,26 @@ public class GameInfo implements Serializable{
 	
 	private Random random = new Random();
 
-	Map<String,Coordinate> getPlayerPostionMap() {
+	public Map<String,Coordinate> getPlayerPostionMap() {
 		return playerPostionMap;
 	}
 	
-	Map<Coordinate, Integer> getTreasureMap() {
+	public Map<Coordinate, Integer> getTreasureMap() {
 		return treasureMap;
 	}
 	
-	Map<String, Integer> getPlayerScoreMap() {
+	public Map<String, Integer> getPlayerScoreMap() {
 		
 		System.out.println("Size in Server is "+playerScoreMap.size());
 		
 		return playerScoreMap;
 	}
 
-	void setPlayerPostionMap(String username, Coordinate coordinate) {
+	public void setPlayerPostionMap(String username, Coordinate coordinate) {
 		playerPostionMap.put(username.toLowerCase(), coordinate);
 	}
 	
-	boolean doesUserExist(String username, String password) {
+	public boolean doesUserExist(String username, String password) {
 		// TODO Auto-generated method stub
 		
 		boolean exists = true;
@@ -63,7 +63,7 @@ public class GameInfo implements Serializable{
 	
 	}
 	
-	void populateTreasureMap() {				
+	public void populateTreasureMap() {				
 		int row = 0;
 		int column = 0;
 
@@ -87,7 +87,7 @@ public class GameInfo implements Serializable{
 
 	}
 	
-	int updateTreasureMap(String username, Coordinate coordinate) {
+	public int updateTreasureMap(String username, Coordinate coordinate) {
 //		System.out.println("OUT");
 //		System.out.println(coordinate.getRow()+", "+coordinate.getColumn());
 //		System.out.println("hashcode" + coordinate.hashCode());
@@ -137,11 +137,11 @@ public class GameInfo implements Serializable{
 		return true;
 	}
 
-	int getGridSize() {
+	public int getGridSize() {
 		return gridSize;
 	}
 
-	void setGridSize(int gridSize) {
+	public void setGridSize(int gridSize) {
 		this.gridSize = gridSize;
 	}
 
@@ -149,7 +149,7 @@ public class GameInfo implements Serializable{
 		return treasureCount;
 	}
 
-	void setTreasureCount(int treasureCount) {
+	public void setTreasureCount(int treasureCount) {
 		this.treasureCount = treasureCount;
 		this.treasureCounter = treasureCount;
 	}

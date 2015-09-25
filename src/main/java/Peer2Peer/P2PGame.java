@@ -33,7 +33,7 @@ public interface P2PGame extends Remote {
 	
 	public boolean updatePrimaryServer() throws RemoteException;
 	
-	
+//	public String getMessage() throws RemoteException;
 	
 	
 

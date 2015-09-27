@@ -6,7 +6,7 @@ public class Constant {
 	 * Maintain all Constant values
 	 * 
 	 */
-	public static final String RMIID = "MazeGame";
-	public static final int RMIPORT = 222;
+	public static final String RMIID = "MazeGameP2P";
+	public static final int RMIPORT = 224;
 
 }

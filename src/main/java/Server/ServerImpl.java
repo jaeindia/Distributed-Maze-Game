@@ -74,7 +74,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		
 		boolean flag = true;
 		
-		
 		if (username != null && password != null) {
 			flag = gameInfoObj.doesUserExist(username, password);
 //			System.out.println("add user flag " + flag);
@@ -118,10 +117,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 				}
 			}
 		}
-		
-//		System.out.println("add user");
-//		System.out.println(gameInfoObj.getPlayerPostionMap());
-//		System.out.println(gameInfoObj.getPlayerObjectMap().size());
+
 		return !flag;
 	}
 
@@ -160,12 +156,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		System.out.println("moved flag value " + moved);
 		if(moved){
 			gameInfoObj.setPlayerPostionMap(username, coordinate);
-			// Update treasure count map
-//			if (gameInfoObj.updateTreasureMap(username, coordinate) == 1 
-//					|| gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
-//				// Update user - treasure count
-////				gameInfoObj.updatePlayerScoreMap(username);
-//			}
+	
 		
 			if (gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
 				// Update user - End Game
@@ -230,26 +221,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		}
 		
 		if (this.timeToStart == 0) {				
-//			Set<String> userSet = gameInfoObj.getPlayerObjectMap().keySet();
-//			Iterator clientObjectIterator = userSet.iterator();
-//			System.out.println("Size is "+userSet.size());
-//			while (clientObjectIterator.hasNext()) {
-//				String user = (String) clientObjectIterator.next();
-//				
-//				Client c = (Client) gameInfoObj.getPlayerObjectMap().get(user);
-//				try {
-//					c.notifyPlayer(true);
-//				} 
-//				catch (RemoteException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-			
-//			for (Map.Entry<Coordinate, Integer> entry : gameInfoObj.getTreasureMap().entrySet()) {
-//			    Coordinate key = entry.getKey();
-//			    System.out.println(key.getRow() + "," + key.getColumn() + " " + key.hashCode());
-//			}
+
 			
 			Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 			while (clientObjectIterator.hasNext()) {

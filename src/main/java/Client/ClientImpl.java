@@ -143,10 +143,7 @@ public class ClientImpl extends UnicastRemoteObject implements ActionListener,Ke
 		Registry registry = LocateRegistry.getRegistry("127.0.0.1", Constant.RMIPORT);
 		impl.serverObj = (Server) registry.lookup(Constant.RMIID);
 		impl.initLoginFrame();
-	/*	while(!impl.playerAddCheck){
-			Thread.sleep(100);
-		}
-		*/
+	
 		while(!impl.hasGamestarted){
 			Thread.sleep(100);
 		}

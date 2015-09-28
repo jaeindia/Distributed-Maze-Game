@@ -59,6 +59,11 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	private Random random;
 	private Coordinate userCoordinate;
 	private static boolean primaryServer;
+	private static boolean backUpServer;
+	
+	
+	private String primaryServerId;
+	private String backupServerId;
 	private boolean secondaryServer;
 	
 	public String userId= null;
@@ -95,6 +100,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		gameInfoObj.setGridSize(5);
 		gameInfoObj.setTreasureCount(10);
 		
+		
 		gridSize = gameInfoObj.getGridSize();
 		timeToStart = 20; // Time to start the game - hard coded
 		timeToStartVal = 20;
@@ -116,12 +122,13 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		// TODO Auto-generated method stub
 		
 		String tempString = null;
-		
+
 		System.out.println("Is this the primary Server?? [Y/N]");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		tempString = br.readLine();
 		if (tempString != null && tempString.equalsIgnoreCase("Y")) {
 			primaryServer = true;
+
 		}
 		else {
 			primaryServer = false;
@@ -132,6 +139,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 			Registry registry = LocateRegistry.createRegistry(Constant.RMIPORT);
 			registry.bind(Constant.RMIID, serverStub);
 			spawnClient(serverStub);
+			
 		}
 		else {
 
@@ -139,16 +147,18 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 			P2PGameImpl clientObj = new P2PGameImpl();
 			Registry registry = LocateRegistry.getRegistry("127.0.0.1", Constant.RMIPORT);
 			clientObj.serverStub = (P2PGame) registry.lookup(Constant.RMIID);
-            clientObj.gridSize = clientObj.serverStub.getGridSize();
+			clientObj.gridSize = clientObj.serverStub.getGridSize();
 			try{
 				clientObj.initLoginFrame();
+				
 				while(!clientObj.hasGamestarted){
 					System.out.println("Sleeping");
 					Thread.sleep(100);
 				}
-
+				
+			
 				if(true){
-					System.out.println(" Player added.. Game has started");
+					System.out.println(" System.out.println");
 					clientObj.playerPostionMap= clientObj.serverStub.getPlayerPostionMap();	
 					System.out.println(clientObj.playerPostionMap.size());
 					clientObj.playerScoreMap = clientObj.serverStub.getPlayerScoreMap();
@@ -164,6 +174,11 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	}
 	
 	
+	private static void backUpUpdate() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	private static void spawnClient(P2PGameImpl impl) {
 		// TODO Auto-generated method stub
 		
@@ -281,14 +296,14 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 
 		if(buttonClick.getSource() instanceof JButton){
 			JButton button = (JButton) buttonClick.getSource();			
-			String userName = this.userNameField.getText();
+			this.userId = this.userNameField.getText();
 			StringBuilder passwordBuilder = new StringBuilder();
 			for(char c : this.passwordField.getPassword()){				
 				passwordBuilder.append(c);
 			}
 
 			String password = passwordBuilder.toString();			
-			if(userName ==null || password==null || userName.isEmpty() || password.isEmpty()){				
+			if(userName ==null || password==null || userId.isEmpty() || password.isEmpty()){				
 				errors.setText("<html> Invalid Login!!.<br> Login Again!!</html>");
 				errors.setVisible(true);				
 				panel.add(errors);
@@ -300,7 +315,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 					try {
 						
 						//System.out.println("Output :"+serverStub.addUser(userName, password,this));
-						if(serverStub.addUser(userName, password,this)){
+						if(serverStub.addUser(userId, password,this)){
 						//if(true){
 						System.out.println("Login Successful");
 						    
@@ -389,6 +404,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				coordinateList.add(userCoordinate);
 				
 				gameInfoObj.setP2PplayerPostionMap(username.toLowerCase(), userCoordinate);
+				gameInfoObj.setServersInfo(username.toLowerCase());
 				//gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
 				if(this.timeToStart == this.timeToStartVal){
@@ -558,7 +574,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 
 
 		gameFrame.getContentPane().add(panel);	
-
+       
 	}
 
 	@Override
@@ -615,6 +631,17 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 					}
 				}
 			}
+		
+		primaryServerId= gameInfoObj.getServersInfo().get(0);
+		if(gameInfoObj.getServersInfo().size()<2){
+			
+			throw new RuntimeException("We need more than two players to start the game.. Exiting....");
+		}else{
+		backupServerId = gameInfoObj.getServersInfo().get(1);
+		
+		
+		}
+		backUpUpdate();
 		}
 		
 	}
@@ -734,6 +761,18 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 			this.hasGameEnded=true;
 		}
 		return this.hasGameEnded;
+	}
+
+	@Override
+	public P2PGameInfo getPrimaryGameInfo() throws RemoteException {
+		// TODO Auto-generated method stub
+		P2PGameInfo gameData = null;
+		if(primaryServer){
+			gameData = this.gameInfoObj;
+		}
+		
+		return gameData;
+		
 	}
 
 

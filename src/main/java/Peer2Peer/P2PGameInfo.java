@@ -2,7 +2,11 @@ package Peer2Peer;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Random;
 
@@ -54,13 +58,23 @@ public class P2PGameInfo implements Serializable {
 	  	
 	  	private Map<String,Integer> P2PplayerScoreMap = new ConcurrentHashMap<String, Integer>();
 	  	
-	  	private Map<String, Client> playerObjectMap = new ConcurrentHashMap<String, Client>();
+	  	private Map<String, P2PGame> playerObjectMap = new ConcurrentHashMap<String, P2PGame>();
+	  	
+	  	private List<String> ServersInfo = new LinkedList<String>();
 
-		public Map<String, Client> getPlayerObjectMap() {
+		public List<String> getServersInfo() {
+			return ServersInfo;
+		}
+
+		public void setServersInfo(String user) {
+			ServersInfo.add(user);
+		}
+
+		public Map<String, P2PGame> getPlayerObjectMap() {
 			return playerObjectMap;
 		}
 
-		public void setPlayerObjectMap(Map<String, Client> playerObjectMap) {
+		public void setPlayerObjectMap(Map<String, P2PGame> playerObjectMap) {
 			this.playerObjectMap = playerObjectMap;
 		}
 

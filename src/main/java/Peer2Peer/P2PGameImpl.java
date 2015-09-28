@@ -176,7 +176,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	
 	private static void backUpUpdate() {
 		// TODO Auto-generated method stub
-		
+		System.out.println("Backup Server and Primary Server up.. Need to copy data");
 	}
 
 	private static void spawnClient(P2PGameImpl impl) {
@@ -467,9 +467,9 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		
 			if (gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
 				// Update user - End Game
-				Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				while (clientObjectIterator.hasNext()) {
-					Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+					Entry<String, P2PGame> clientObjectEntry = clientObjectIterator.next();
 					try {
 						clientObjectEntry.getValue().notifyGameEnd(true);
 					} 
@@ -619,9 +619,9 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 //				    System.out.println(key.getRow() + "," + key.getColumn() + " " + key.hashCode());
 //				}
 				
-				Iterator<Entry<String, Client>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				while (clientObjectIterator.hasNext()) {
-					Entry<String, Client> clientObjectEntry = clientObjectIterator.next();
+					Entry<String, P2PGame> clientObjectEntry = clientObjectIterator.next();
 					try {
 						clientObjectEntry.getValue().notifyPlayer(true);
 					} 

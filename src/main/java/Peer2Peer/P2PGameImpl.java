@@ -48,7 +48,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private GameInfo gameInfoObj;
+	private P2PGameInfo gameInfoObj;
 	private int gridSize;
 	private int timeToStart;
 	private int timeToStartVal;
@@ -60,7 +60,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	private Coordinate userCoordinate;
 	private static boolean primaryServer;
 	private boolean secondaryServer;
-	public P2PGame serverObj;
+	
 	public String userId= null;
 	public JFrame gameFrame = new JFrame();
 	public JPanel panel = new JPanel();
@@ -78,10 +78,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
     public boolean hasGamestarted = false;
     public boolean hasGameEnded = false;
     private Map<String,Coordinate> playerPostionMap = new ConcurrentHashMap<String,Coordinate>();
-	
-	
-  	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
-  	
+	private Map<Coordinate,Integer> treasureMap = new HashMap<Coordinate,Integer>();
   	private Map<String,Integer> playerScoreMap = new ConcurrentHashMap<String, Integer>();
   	
 	
@@ -93,14 +90,14 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	protected P2PGameImpl(boolean primaryServer) throws RemoteException {
 		super();
 		// TODO Auto-generated constructor stub
-		gameInfoObj = new GameInfo();
+		gameInfoObj = new P2PGameInfo();
 		// Set gridSize and treasureCount
 		gameInfoObj.setGridSize(5);
 		gameInfoObj.setTreasureCount(10);
 		
 		gridSize = gameInfoObj.getGridSize();
-		timeToStart = 10; // Time to start the game - hard coded
-		timeToStartVal = 10;
+		timeToStart = 20; // Time to start the game - hard coded
+		timeToStartVal = 20;
 		
 		populateTreasureMap = true;
 		coordinateList = new ArrayList<Coordinate>();
@@ -117,58 +114,52 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	
 	public static void main(String[] args) throws AlreadyBoundException, java.rmi.AlreadyBoundException, NotBoundException, IOException {
 		// TODO Auto-generated method stub
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String tempString = null;
-		System.out.println("Main\n");
-		tempString = br.readLine();
 		
-		if (tempString != null && tempString.equals("host")) {
+		String tempString = null;
+		
+		System.out.println("Is this the primary Server?? [Y/N]");
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		tempString = br.readLine();
+		if (tempString != null && tempString.equalsIgnoreCase("Y")) {
 			primaryServer = true;
 		}
 		else {
 			primaryServer = false;
 		}
-		
+
 		if (primaryServer) {
-			P2PGameImpl serverObj = new P2PGameImpl(true);
+			P2PGameImpl serverStub = new P2PGameImpl(true);
 			Registry registry = LocateRegistry.createRegistry(Constant.RMIPORT);
-			registry.bind(Constant.RMIID, serverObj);
-			
-			spawnClient(serverObj);
+			registry.bind(Constant.RMIID, serverStub);
+			spawnClient(serverStub);
 		}
 		else {
+
+			System.out.println("Inside another player");
 			P2PGameImpl clientObj = new P2PGameImpl();
 			Registry registry = LocateRegistry.getRegistry("127.0.0.1", Constant.RMIPORT);
 			clientObj.serverStub = (P2PGame) registry.lookup(Constant.RMIID);
-			
+            clientObj.gridSize = clientObj.serverStub.getGridSize();
 			try{
-				
 				clientObj.initLoginFrame();
-				
 				while(!clientObj.hasGamestarted){
+					System.out.println("Sleeping");
 					Thread.sleep(100);
 				}
-				
+
 				if(true){
-					System.out.println("First Player added.. Game has started");
-				   
-					clientObj.playerPostionMap= clientObj.serverObj.getPlayerPostionMap();	
-					clientObj.playerScoreMap = clientObj.serverObj.getPlayerScoreMap();
-					clientObj.treasureMap = clientObj.serverObj.getTreasureMap();
+					System.out.println(" Player added.. Game has started");
+					clientObj.playerPostionMap= clientObj.serverStub.getPlayerPostionMap();	
+					System.out.println(clientObj.playerPostionMap.size());
+					clientObj.playerScoreMap = clientObj.serverStub.getPlayerScoreMap();
+					clientObj.treasureMap = clientObj.serverStub.getTreasureMap();
 					clientObj.displayupdatedMaze();
-					//clientObj.readButtons();
-					}
-				}catch(Exception ee){
-					System.err.println("Error Initializing the game !! Game will exit now...");
-					JOptionPane.showMessageDialog(null,
-			                "Error Initializing the game !! Game will Exit now");
-					
-					
 				}
-				
-			
-			
-//			System.out.println(clientObj.serverStub.getMessage());
+			}catch(Exception ee){
+				System.err.println("Error Initializing the game !! Game will exit now...");
+				JOptionPane.showMessageDialog(null,
+						"Error Initializing the game !! Game will Exit now");
+			}
 		}
 	}
 	
@@ -179,20 +170,20 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		try{
 		System.out.println("Spawning Players....");
 		Registry registry = LocateRegistry.getRegistry("127.0.0.1", Constant.RMIPORT);
-		impl.serverObj = (P2PGame) registry.lookup(Constant.RMIID);
+		impl.serverStub = (P2PGame) registry.lookup(Constant.RMIID);
 		impl.initLoginFrame();
 	
-		/*while(!impl.hasGamestarted){
+		while(!impl.hasGamestarted){
 			Thread.sleep(100);
-		}*/
+		}
 		//if(impl.hasGamestarted){
 		
 		if(true){
 			System.out.println("Player added.. Game has started");
 		   
-			impl.playerPostionMap= impl.serverObj.getPlayerPostionMap();	
-			impl.playerScoreMap = impl.serverObj.getPlayerScoreMap();
-			impl.treasureMap = impl.serverObj.getTreasureMap();
+			impl.playerPostionMap= impl.serverStub.getPlayerPostionMap();	
+			impl.playerScoreMap = impl.serverStub.getPlayerScoreMap();
+			impl.treasureMap = impl.serverStub.getTreasureMap();
 			impl.displayupdatedMaze();
 			//impl.readButtons();
 			}
@@ -209,13 +200,15 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 
 	private void displayupdatedMaze() {
 		// TODO Auto-generated method stub
+		
+		
 		//playerPostionMap.put("abhinav", new Coordinate(2, 2));
 		//playerPostionMap.put("sarja", new Coordinate(4, 0));
 		//treasureMap.put(new Coordinate(3,2), 2);
 		//treasureMap.put(new Coordinate(4,3), 3);
 		//Set<String> playerSet = playerPostionMap.keySet();
 		System.out.println("***********************************************\n");
-		
+		   
 			
 			for (int i =0;i<this.gridSize;i++){
 			for(int j=0;j<this.gridSize;j++){
@@ -241,9 +234,9 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	private String entityCheck(int i, int j) {
 		// TODO Auto-generated method stub
 		String present = null;
-		//System.out.println(i+","+j);
+		//System.out.println("Sizes are "+playerPostionMap.size()+","+treasureMap.size());
 		try{
-		
+			//System.out.print(playerPostionMap.size());
 		Set<String> playerSet = playerPostionMap.keySet();
 		Iterator<String> itr = playerSet.iterator();
 		while(itr.hasNext()){
@@ -257,7 +250,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 			
 		}
 		//System.out.println(treasureMap.size());
-		treasureMap = this.serverObj.getTreasureMap();
+		treasureMap = this.serverStub.getTreasureMap();
 		Set<Coordinate> treasureSet = treasureMap.keySet();
 		Iterator<Coordinate> itr1 = treasureSet.iterator();
 		while(itr1.hasNext()){
@@ -306,8 +299,8 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				if("login".equals(button.getActionCommand())){
 					try {
 						
-						//System.out.println("Output :"+this.serverObj.addUser(userName, password,this));
-						if(addUser(userName, password,this)){
+						//System.out.println("Output :"+serverStub.addUser(userName, password,this));
+						if(serverStub.addUser(userName, password,this)){
 						//if(true){
 						System.out.println("Login Successful");
 						    
@@ -327,6 +320,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 							panel.add(keyboardEntry);		
 							panel.repaint();
 							this.playerAddCheck= true;
+							this.hasGamestarted=true;
 						}else{
 							JOptionPane.showMessageDialog(null,
 					                "Login failed !!\n"
@@ -335,7 +329,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 					                + " 2.Wrong Password.");
 						}
 					}catch(Exception e){
-
+                        System.out.println("Exception "+e.getMessage());
 					}
 				}
 			}
@@ -356,7 +350,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	}
 
 
-	public synchronized boolean addUser(String username, String password, P2PGameImpl clientObj)
+	public synchronized boolean addUser(String username, String password, P2PGame clientObj)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		
@@ -375,7 +369,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 					
 					populateTreasureMap = false;
 					
-					for(Entry<Coordinate, Integer> entry: gameInfoObj.getTreasureMap().entrySet()) {
+					for(Entry<Coordinate, Integer> entry: gameInfoObj.getP2PtreasureMap().entrySet()) {
 //						System.out.println("Inside loop\n" + entry.getKey());
 						coordinateList.add(entry.getKey());
 //						System.out.println("Entry added\n");
@@ -394,7 +388,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				} while(!coordinateList.contains(userCoordinate));
 				coordinateList.add(userCoordinate);
 				
-				gameInfoObj.setPlayerPostionMap(username.toLowerCase(), userCoordinate);
+				gameInfoObj.setP2PplayerPostionMap(username.toLowerCase(), userCoordinate);
 				//gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
 				if(this.timeToStart == this.timeToStartVal){
@@ -419,7 +413,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		// TODO Auto-generated method stub
 		
 		System.out.println("Inside Move "+coordinate.getRow()+","+coordinate.getColumn());
-		Map<String,Coordinate> playerPositionMap = gameInfoObj.getPlayerPostionMap();
+		Map<String,Coordinate> playerPositionMap = gameInfoObj.getP2PplayerPostionMap();
 		boolean moved = true;
 		// Check first if the user actually exists
 		if (!gameInfoObj.doesUserExist(username, "TestGame")) {
@@ -447,7 +441,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		// Update position
 		System.out.println("moved flag value " + moved);
 		if(moved){
-			gameInfoObj.setPlayerPostionMap(username, coordinate);
+			gameInfoObj.setP2PplayerPostionMap(username, coordinate);
 			// Update treasure count map
 //			if (gameInfoObj.updateTreasureMap(username, coordinate) == 1 
 //					|| gameInfoObj.updateTreasureMap(username, coordinate) == -1) {
@@ -483,20 +477,20 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 	@Override
 	public synchronized Map<String, Coordinate> getPlayerPostionMap() throws RemoteException {
 		// TODO Auto-generated method stub
-		return gameInfoObj.getPlayerPostionMap();
+		return gameInfoObj.getP2PplayerPostionMap();
 	}
 
 	@Override
 	public synchronized Map<Coordinate, Integer> getTreasureMap() throws RemoteException {
 		// TODO Auto-generated method stub
-		return gameInfoObj.getTreasureMap();
+		return gameInfoObj.getP2PtreasureMap();
 	}
 
 	@Override
 	public synchronized Map<String, Integer> getPlayerScoreMap() throws RemoteException {
 		// TODO Auto-generated method stub
-		System.out.println("Size of Scoer Map is "+gameInfoObj.getPlayerScoreMap().size());
-		return gameInfoObj.getPlayerScoreMap();
+		//System.out.println("Size of Scoer Map is "+gameInfoObj.getPlayerScoreMap().size());
+		return gameInfoObj.getP2PplayerScoreMap();
 	}
 
 	@Override
@@ -573,7 +567,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		if (primaryServer) {
 			int timeToBegin = this.timeToStart;
 			while(timeToBegin > 0){
-				System.out.println("Game Start - Countdown : " + timeToStart);
+				//System.out.println("Game Start - Countdown : " + timeToStart);
 					timeToBegin--;
 					
 					try {
@@ -652,7 +646,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		if(!checkGameEnded()){
 		try{
             boolean moved = false;
-			playerPostionMap= this.serverObj.getPlayerPostionMap();	
+			playerPostionMap= this.serverStub.getPlayerPostionMap();	
 			System.out.println(playerPostionMap.size());
 			Coordinate c = playerPostionMap.get(userId);
 			if(c!=null){
@@ -666,7 +660,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				c.setColumn(c.getColumn());
 				
 				System.out.println("Move is "+moved);
-				moved = this.serverObj.moveUser(userId, c);
+				moved = this.serverStub.moveUser(userId, c);
 				System.out.println("Move is "+moved);
 				if(moved){
 				displayupdatedMaze();
@@ -678,7 +672,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				c.setRow(c.getRow()+1);
 				c.setColumn(c.getColumn());
 				//System.out.println(c.toString());
-				moved = this.serverObj.moveUser(userId, c);
+				moved = this.serverStub.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
 				}else{
@@ -689,7 +683,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()+1);
 				//System.out.println(c.toString());
-				moved = this.serverObj.moveUser(userId, c);
+				moved = this.serverStub.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
 				}else{
@@ -700,7 +694,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				c.setRow(c.getRow());
 				c.setColumn(c.getColumn()-1);
 				//System.out.println(c.toString());
-				moved = this.serverObj.moveUser(userId, c);
+				moved = this.serverStub.moveUser(userId, c);
 				if(moved){
 				displayupdatedMaze();
 				}else{
@@ -713,7 +707,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		}else{
 			System.out.println("Game has ended");
 			try{
-			playerScoreMap = serverObj.getPlayerScoreMap();
+			playerScoreMap = serverStub.getPlayerScoreMap();
 			System.out.println("***********************************************");
 			System.out.println("FINAL SCORES\n");
 			Set<String> scores = new HashSet<String>();
@@ -742,12 +736,9 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		return this.hasGameEnded;
 	}
 
-	@Override
-	public boolean addUser(String username, String password, Client clientObj)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+
+
+	
 	
 	
 }

@@ -2,15 +2,12 @@ package Peer2Peer;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Random;
 
-import Client.Client;
+import java.util.Random;
 import Server.Coordinate;
 
 public class P2PGameInfo implements Serializable {
@@ -19,10 +16,10 @@ public class P2PGameInfo implements Serializable {
 		private static final long serialVersionUID = -7586744666506268851L;
 		
 		private int gridSize;
-		
 		private int treasureCount;
-		
 		private int treasureCounter;
+//		private String primaryServerId;
+//		private String backupServerId;
 		
 		public int getGridSize() {
 			return gridSize;
@@ -60,14 +57,18 @@ public class P2PGameInfo implements Serializable {
 	  	
 	  	private Map<String, P2PGame> playerObjectMap = new ConcurrentHashMap<String, P2PGame>();
 	  	
-	  	private List<String> ServersInfo = new LinkedList<String>();
+	  	private List<String> playerList = new LinkedList<String>();
 
-		public List<String> getServersInfo() {
-			return ServersInfo;
+		public List<String> getPlayerList() {
+			return playerList;
 		}
 
-		public void setServersInfo(String user) {
-			ServersInfo.add(user);
+		public void addPlayerToList(String user) {
+			playerList.add(user);
+		}
+		
+		public void setPlayerList(List<String> playerList) {
+			this.playerList = playerList; 
 		}
 
 		public Map<String, P2PGame> getPlayerObjectMap() {
@@ -77,6 +78,11 @@ public class P2PGameInfo implements Serializable {
 		public void setPlayerObjectMap(Map<String, P2PGame> playerObjectMap) {
 			this.playerObjectMap = playerObjectMap;
 		}
+		
+		public void setPlayerObjectMap(String username, P2PGame clientObj) {
+//			System.out.println(username + ","+clientObj);
+			this.playerObjectMap.put(username.toLowerCase(), clientObj);
+		}
 
 		public Map<String, Coordinate> getP2PplayerPostionMap() {
 			return P2PplayerPostionMap;
@@ -85,13 +91,17 @@ public class P2PGameInfo implements Serializable {
 		public void setP2PplayerPostionMap(String username, Coordinate coordinate) {
 			P2PplayerPostionMap.put(username.toLowerCase(), coordinate);
 		}
+		
+		public void setP2PplayerPostionMap(Map<String,Coordinate> P2PplayerPostionMap ) {
+			this.P2PplayerPostionMap = P2PplayerPostionMap;
+		}
 
 		public Map<Coordinate, Integer> getP2PtreasureMap() {
 			return P2PtreasureMap;
 		}
 
 		public void setP2PtreasureMap(Map<Coordinate, Integer> p2PtreasureMap) {
-			P2PtreasureMap = p2PtreasureMap;
+			this.P2PtreasureMap = p2PtreasureMap;
 		}
 
 		public Map<String, Integer> getP2PplayerScoreMap() {
@@ -189,4 +199,20 @@ public class P2PGameInfo implements Serializable {
 			// Return false if the treasure is not found
 			return 0;
 		}
+
+//		public String getPrimaryServerId() {
+//			return primaryServerId;
+//		}
+//
+//		public void setPrimaryServerId(String primaryServerId) {
+//			this.primaryServerId = primaryServerId;
+//		}
+//
+//		public String getBackupServerId() {
+//			return backupServerId;
+//		}
+//
+//		public void setBackupServerId(String backupServerId) {
+//			this.backupServerId = backupServerId;
+//		}
 }

@@ -41,8 +41,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server, Runnable{
 		gameInfoObj.setTreasureCount(10);
 		
 		gridSize = gameInfoObj.getGridSize();
-		timeToStart = 10; // Time to start the game - hard coded
-		timeToStartVal = 10;
+		timeToStart = 20; // Time to start the game - hard coded
+		timeToStartVal = 20;
 		
 		populateTreasureMap = true;
 		coordinateList = new ArrayList<Coordinate>();

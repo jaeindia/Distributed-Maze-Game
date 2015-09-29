@@ -135,7 +135,14 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		if (primaryServer) {
 			P2PGameImpl serverStub = new P2PGameImpl(true);
 			Registry registry = LocateRegistry.createRegistry(Constant.RMIPORT);
-			registry.bind(Constant.RMIID, serverStub);
+			try {
+				registry.bind(Constant.RMIID, serverStub);
+			}
+			catch (Exception e) {
+				registry.unbind(Constant.RMIID);
+				System.out.println("RECREATING REGISTRY");
+				registry.bind(Constant.RMIID, serverStub);
+			}
 			spawnClient(serverStub);
 			
 		}
@@ -721,113 +728,112 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 						e.printStackTrace();
 					}
 				}
-				
-				// Handled backupServer crash
-				while(primaryServer && !this.hasGameEnded){
-					try{
-						Thread.sleep(5000L);
-						clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-						while (clientObjectIterator.hasNext()) {
-							Entry<String, P2PGame> clientObjectEntry = clientObjectIterator.next();
-							try {
-								@SuppressWarnings("unused")
-								boolean flag = clientObjectEntry.getValue().isAlive();
-							} 
-							catch (RemoteException e) {
-								// TODO Auto-generated catch block
-								System.err.println("Player " + clientObjectEntry.getKey() + " has QUIT");
-								// Remove from playerList
-								List<String> playerList = this.gameInfoObj.getPlayerList();
-								String backupServer = clientObjectEntry.getKey();
-								playerList.remove(clientObjectEntry.getKey());
-								this.gameInfoObj.setPlayerList(playerList);
-								// Remove from playerPositionMap
-								Map<String, Coordinate> p2PplayerPostionMap = this.gameInfoObj.getP2PplayerPostionMap();
-								p2PplayerPostionMap.remove(clientObjectEntry.getKey());
-								this.gameInfoObj.setP2PplayerPostionMap(p2PplayerPostionMap);
-								// Remove from playerObjectMap
-								Map<String, P2PGame> playerObjectMap = this.gameInfoObj.getPlayerObjectMap();
-								playerObjectMap.remove(clientObjectEntry.getKey());
-								this.gameInfoObj.setPlayerObjectMap(playerObjectMap);
-								
-								if (this.gameInfoObj.getPlayerList().size() > 1) {
-									if (backupServer.equalsIgnoreCase(backupServerId)) {
-										System.out.println("backupServer " + backupServer + " has crashed");
-										// New backupServer
-										backupServerId = playerList.get(1);
-										System.out.println("Creating new backupServer " + backupServerId);
-									}
-									
-									try {
-										this.gameInfoObj.getPlayerObjectMap().get(backupServerId).upgradeToBackupServer();
-									} catch (RemoteException e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
-								}
-							}
-						}
-						
-					}catch(InterruptedException e){
-						e.printStackTrace();
-					}
-				}
-
-				// Handled primaryServer crash
-				while(backupServer && !this.hasGameEnded){
+			}
+		}
+		// Handled backupServer crash
+		while(primaryServer && !this.hasGameEnded){
+			try{
+				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				Thread.sleep(5000L);
+				clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				while (clientObjectIterator.hasNext()) {
+					Entry<String, P2PGame> clientObjectEntry = clientObjectIterator.next();
 					try {
-						Thread.sleep(5000L);
 						@SuppressWarnings("unused")
-						boolean flag = this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).isAlive();
-					} catch (Exception e) {
+						boolean flag = clientObjectEntry.getValue().isAlive();
+					} 
+					catch (RemoteException e) {
 						// TODO Auto-generated catch block
-						System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + "has crashed");
-						
-						System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer");
-						System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(2));
-						
+						System.err.println("Player " + clientObjectEntry.getKey() + " has QUIT");
+						// Remove from playerList
+						List<String> playerList = this.gameInfoObj.getPlayerList();
+						String backupServer = clientObjectEntry.getKey();
+						playerList.remove(clientObjectEntry.getKey());
+						this.gameInfoObj.setPlayerList(playerList);
 						// Remove from playerPositionMap
 						Map<String, Coordinate> p2PplayerPostionMap = this.gameInfoObj.getP2PplayerPostionMap();
-						p2PplayerPostionMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+						p2PplayerPostionMap.remove(clientObjectEntry.getKey());
 						this.gameInfoObj.setP2PplayerPostionMap(p2PplayerPostionMap);
 						// Remove from playerObjectMap
 						Map<String, P2PGame> playerObjectMap = this.gameInfoObj.getPlayerObjectMap();
-						playerObjectMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+						playerObjectMap.remove(clientObjectEntry.getKey());
 						this.gameInfoObj.setPlayerObjectMap(playerObjectMap);
-						// Remove from playerList
-						List<String> playerList = this.gameInfoObj.getPlayerList();
-						playerList.remove(this.gameInfoObj.getPlayerList().remove(0));
-						this.gameInfoObj.setPlayerList(playerList);
-						
-						try {
-							this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).upgradeToPrimaryServer();
-						} catch (RemoteException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						// New primaryServer and backupServer
-						this.primaryServerId = this.gameInfoObj.getPlayerList().get(0);
-						this.backupServerId = null;
 						
 						if (this.gameInfoObj.getPlayerList().size() > 1) {
-							this.backupServerId = this.gameInfoObj.getPlayerList().get(1);
+							if (backupServer.equalsIgnoreCase(backupServerId)) {
+								System.out.println("backupServer " + backupServer + " has crashed");
+								// New backupServer
+								backupServerId = playerList.get(1);
+								System.out.println("Creating new backupServer " + backupServerId);
+							}
+							
+							try {
+								this.gameInfoObj.getPlayerObjectMap().get(backupServerId).upgradeToBackupServer();
+							} catch (RemoteException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
-						
-						this.primaryServer = true;
-						this.backupServer = false;
-						
-						Thread.currentThread().interrupt();
-						Thread t = new Thread(this);
-						t.start();
-						break;
 					}
-					
 				}
+				
+			}catch(InterruptedException e){
+				e.printStackTrace();
 			}
-//			backUpUpdate();
 		}
-		
+
+		// Handled primaryServer crash
+		while(backupServer && !this.hasGameEnded){
+			try {
+				Thread.sleep(5000L);
+				@SuppressWarnings("unused")
+				boolean flag = this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).isAlive();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + "has crashed");
+				
+				System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer");
+				System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(2));
+				
+				// Remove from playerPositionMap
+				Map<String, Coordinate> p2PplayerPostionMap = this.gameInfoObj.getP2PplayerPostionMap();
+				p2PplayerPostionMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+				this.gameInfoObj.setP2PplayerPostionMap(p2PplayerPostionMap);
+				// Remove from playerObjectMap
+				Map<String, P2PGame> playerObjectMap = this.gameInfoObj.getPlayerObjectMap();
+				playerObjectMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+				this.gameInfoObj.setPlayerObjectMap(playerObjectMap);
+				// Remove from playerList
+				List<String> playerList = this.gameInfoObj.getPlayerList();
+				playerList.remove(this.gameInfoObj.getPlayerList().remove(0));
+				this.gameInfoObj.setPlayerList(playerList);
+				
+				try {
+					this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).upgradeToPrimaryServer();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				// New primaryServer and backupServer
+				this.primaryServerId = this.gameInfoObj.getPlayerList().get(0);
+				this.backupServerId = null;
+				
+				if (this.gameInfoObj.getPlayerList().size() > 1) {
+					this.backupServerId = this.gameInfoObj.getPlayerList().get(1);
+				}
+				
+				this.primaryServer = true;
+				this.backupServer = false;
+				
+				Thread.currentThread().interrupt();
+				Thread t = new Thread(this);
+				t.start();
+				break;
+			}
+				
+		}
+//			backUpUpdate();
 	}
 	
 	public boolean isAlive() {

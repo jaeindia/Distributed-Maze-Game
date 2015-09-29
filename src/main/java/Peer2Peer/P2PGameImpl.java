@@ -797,7 +797,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				// TODO Auto-generated catch block
 				System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + " has crashed");
 				
-				System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer");
+				System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer\n");
 				System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(2));
 				
 				// Remove from playerPositionMap
@@ -856,6 +856,9 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				
 				this.primaryServer = true;
 				this.backupServer = false;
+				
+				// Avoid notifying the players about the GAMESTART
+				this.timeToStart = -1;
 				
 				Thread.currentThread().interrupt();
 				Thread t = new Thread(this);

@@ -405,9 +405,6 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				
 				gameInfoObj.setP2PplayerPostionMap(username.toLowerCase(), userCoordinate);
 				gameInfoObj.addPlayerToList(username.toLowerCase());
-				if (gameInfoObj.getPlayerList().size() == 2) {
-					this.backupServer = true;
-				}
 				gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
 				if(this.timeToStart == this.timeToStartVal){
@@ -558,6 +555,8 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 //		System.out.println(backupServerObj);
 //		System.out.println("Update Backup server");
 //		System.out.println("Backup server" + this.gameInfoObj.getPlayerList().get(1));
+		System.out.println("PLAYERLIST");
+		System.out.println(primaryServerGameInfoObj.getPlayerList());
 		this.gameInfoObj.setGridSize(primaryServerGameInfoObj.getGridSize());
 		this.gameInfoObj.setTreasureCount(primaryServerGameInfoObj.getTreasureCount());
 		this.gameInfoObj.setTreasureCounter(primaryServerGameInfoObj.getTreasureCounter());
@@ -572,6 +571,8 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		
 		System.out.println("Primary Server : " + this.gameInfoObj.getPlayerList().get(0));
 		System.out.println("Backup Server : " + this.gameInfoObj.getPlayerList().get(1));
+		
+		System.out.println("Starting Backup Server Thread : " + this.gameInfoObj.getPlayerList().get(1));
 		
 		Thread t = new Thread(this);
 		t.start();
@@ -703,11 +704,11 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 //				System.out.println(gameInfoObj.getPlayerObjectMap());
 				
 				
-				primaryServerId = gameInfoObj.getPlayerList().get(0);
+				this.primaryServerId = gameInfoObj.getPlayerList().get(0);
 				if(gameInfoObj.getPlayerList().size() < 2){
 					throw new RuntimeException("We need more than two players to start the game.. Exiting....");
 				} else {
-					backupServerId = gameInfoObj.getPlayerList().get(1);
+					this.backupServerId = gameInfoObj.getPlayerList().get(1);
 					// Create backupServer
 					try {
 						this.gameInfoObj.getPlayerObjectMap().get(gameInfoObj.getPlayerList().get(1)).upgradeToBackupServer();
@@ -716,6 +717,8 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 						e.printStackTrace();
 					}
 				}
+				
+				System.out.println("Notifying GAMESTART");
 				
 				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				while (clientObjectIterator.hasNext()) {
@@ -785,30 +788,58 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		// Handled primaryServer crash
 		while(backupServer && !this.hasGameEnded){
 			try {
-				Thread.sleep(5000L);
+				System.out.println("BACKUPSERVER");
+				Thread.sleep(500L);
+				System.out.println("CHECKING PRIMARYSERVER");
 				@SuppressWarnings("unused")
 				boolean flag = this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).isAlive();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + "has crashed");
+				System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + " has crashed");
 				
 				System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer");
 				System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(2));
 				
 				// Remove from playerPositionMap
 				Map<String, Coordinate> p2PplayerPostionMap = this.gameInfoObj.getP2PplayerPostionMap();
-				p2PplayerPostionMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+				p2PplayerPostionMap.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setP2PplayerPostionMap(p2PplayerPostionMap);
 				// Remove from playerObjectMap
 				Map<String, P2PGame> playerObjectMap = this.gameInfoObj.getPlayerObjectMap();
-				playerObjectMap.remove(this.gameInfoObj.getPlayerList().remove(0));
+				playerObjectMap.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setPlayerObjectMap(playerObjectMap);
 				// Remove from playerList
 				List<String> playerList = this.gameInfoObj.getPlayerList();
-				playerList.remove(this.gameInfoObj.getPlayerList().remove(0));
+				playerList.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setPlayerList(playerList);
 				
+				
+				// Start the registry
+				System.out.println("Starting NEW REGISTRY");
+				P2PGameImpl serverStub = null;
+				Registry registry = null;
 				try {
+					serverStub = new P2PGameImpl(true);
+					registry = LocateRegistry.createRegistry(Constant.RMIPORT);
+				}
+				catch (Exception e1) {
+					try {
+						registry.unbind(Constant.RMIID);
+					} catch (RemoteException | NotBoundException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
+					System.out.println("RECREATING REGISTRY");
+					try {
+						registry.bind(Constant.RMIID, serverStub);
+					} catch (RemoteException | java.rmi.AlreadyBoundException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
+				}
+				
+				try {
+					System.out.println("SIZE " + this.gameInfoObj.getPlayerList().size());
 					this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).upgradeToPrimaryServer();
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block

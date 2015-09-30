@@ -746,6 +746,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				Thread.sleep(5000L);
 				clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+				
 				while (clientObjectIterator.hasNext()) {
 					Entry<String, P2PGame> clientObjectEntry = clientObjectIterator.next();
 					try {
@@ -784,6 +785,17 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 									e1.printStackTrace();
 								}
 							}
+						}else if (this.gameInfoObj.getPlayerList().size() < 2 && !this.gameInfoObj.getPlayerList().contains(backupServer) ) {
+							Iterator<Entry<String, P2PGame>> clientObjectIterator1 = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+							Thread.sleep(5000L);
+							clientObjectIterator1 = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
+							
+							while (clientObjectIterator1.hasNext()) {
+								/*
+								 * notifyGameEnd @To-DO -- Jay
+								 */
+								
+							}
 						}
 					}
 				}
@@ -816,10 +828,19 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				Map<String, P2PGame> playerObjectMap = this.gameInfoObj.getPlayerObjectMap();
 				playerObjectMap.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setPlayerObjectMap(playerObjectMap);
+				
+				
 				// Remove from playerList
 				List<String> playerList = this.gameInfoObj.getPlayerList();
 				playerList.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setPlayerList(playerList);
+				if(playerList.size()<2){
+					/*
+					 * 
+					 * notify Game End
+					 */
+				}
+				
 				
 				if (this.gameInfoObj.getPlayerList().size() > 1) {
 					System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(1));
@@ -902,7 +923,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 //			System.out.println("BACKUP server check\n");
 //			System.out.println(this.gameInfoObj.getP2PplayerPostionMap() + "\n");
 			if(c!=null){
-			System.out.println(c.toString());
+			//System.out.println(c.toString());
 			}else {
 				System.out.println("c is null");
 			}

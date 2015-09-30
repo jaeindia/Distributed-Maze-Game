@@ -15,7 +15,7 @@ public interface P2PGame extends Remote {
 	
 	public void notifyPlayer(boolean gameStarted) throws RemoteException;
 	
-	public void notifyGameEnd(boolean gameEnded) throws RemoteException;
+	public boolean notifyGameEnd(boolean gameEnded) throws RemoteException;
 	
 	public boolean addUser(String username, String password, P2PGame clientObj) throws RemoteException;
 	
@@ -38,6 +38,8 @@ public interface P2PGame extends Remote {
 	public P2PGameInfo getGameInfoObj() throws RemoteException;
 	
 	public boolean isAlive() throws RemoteException;
+
+	public void notifynewRegistry() throws RemoteException;
 	
 //	public String getMessage() throws RemoteException;
 	

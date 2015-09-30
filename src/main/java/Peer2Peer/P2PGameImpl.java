@@ -412,6 +412,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				
 				gameInfoObj.setP2PplayerPostionMap(username.toLowerCase(), userCoordinate);
 				gameInfoObj.addPlayerToList(username.toLowerCase());
+				gameInfoObj.addtoP2PPlayerScoreMap(username.toLowerCase());
 				gameInfoObj.setPlayerObjectMap(username.toLowerCase(), clientObj);
 				
 				if(this.timeToStart == this.timeToStartVal){
@@ -744,7 +745,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		while(primaryServer && !this.hasGameEnded){
 			try{
 				Iterator<Entry<String, P2PGame>> clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-				Thread.sleep(5000L);
+				//Thread.sleep(1L);
 				clientObjectIterator = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
 				
 				while (clientObjectIterator.hasNext()) {
@@ -756,6 +757,13 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 					catch (RemoteException e) {
 						// TODO Auto-generated catch block
 						System.err.println("Player " + clientObjectEntry.getKey() + " EXITED");
+						
+						if ((this.gameInfoObj.getPlayerList().size()- 1) < 2) {
+							System.err.println("\nWe need atleast two players to play the game.. Exiting....\n");
+							Thread.currentThread().interrupt();
+							System.exit(0);
+						}
+						
 						// Remove from playerList
 						List<String> playerList = this.gameInfoObj.getPlayerList();
 						String backupServer = clientObjectEntry.getKey();
@@ -785,22 +793,11 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 									e1.printStackTrace();
 								}
 							}
-						}else if (this.gameInfoObj.getPlayerList().size() < 2 && !this.gameInfoObj.getPlayerList().contains(backupServer) ) {
-							Iterator<Entry<String, P2PGame>> clientObjectIterator1 = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-							Thread.sleep(5000L);
-							clientObjectIterator1 = gameInfoObj.getPlayerObjectMap().entrySet().iterator();
-							
-							while (clientObjectIterator1.hasNext()) {
-								/*
-								 * notifyGameEnd @To-DO -- Jay
-								 */
-								
-							}
 						}
 					}
 				}
 				
-			}catch(InterruptedException e){
+			}catch(Exception e){
 				e.printStackTrace();
 			}
 		}
@@ -809,14 +806,22 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		while(backupServer && !this.hasGameEnded){
 			try {
 				//System.out.println("BACKUPSERVER");
-				Thread.sleep(500L);
+				//Thread.sleep(1L);
 				//System.out.println("CHECKING PRIMARYSERVER");
 				@SuppressWarnings("unused")
 				boolean flag = this.gameInfoObj.getPlayerObjectMap().get(this.gameInfoObj.getPlayerList().get(0)).isAlive();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+//				System.out.println("\nSIZE\n");
+//				System.out.println((this.gameInfoObj.getPlayerList().size()));
+				if ((this.gameInfoObj.getPlayerList().size()- 1) < 2) {
+					System.err.println("\nWe need atleast two players to play the game.. Exiting....\n");
+					Thread.currentThread().interrupt();
+					System.exit(0);
+				}
+				
 				System.err.println("primaryServer " + this.gameInfoObj.getPlayerList().get(0) + " has crashed");
-				System.out.println(this.gameInfoObj.getPlayerList());
+//				System.out.println(this.gameInfoObj.getPlayerList());
 				this.primaryServerId = this.gameInfoObj.getPlayerList().get(1);
 				System.err.println("Upgrading backupServer " + this.gameInfoObj.getPlayerList().get(1) + " to primaryServer\n");
 				
@@ -834,13 +839,6 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				List<String> playerList = this.gameInfoObj.getPlayerList();
 				playerList.remove(this.gameInfoObj.getPlayerList().get(0));
 				this.gameInfoObj.setPlayerList(playerList);
-				if(playerList.size()<2){
-					/*
-					 * 
-					 * notify Game End
-					 */
-				}
-				
 				
 				if (this.gameInfoObj.getPlayerList().size() > 1) {
 					System.err.println("Creating new backupServer " + this.gameInfoObj.getPlayerList().get(1));
@@ -915,93 +913,132 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		// TODO Auto-generated method stub
 //		System.out.println("Here");
 		if(!checkGameEnded()){
-		try{
-            boolean moved = false;
-			playerPostionMap= this.serverStub.getPlayerPostionMap();	
-//			System.out.println("Size " + playerPostionMap.size() + "Username " + this.userId);
-			Coordinate c = playerPostionMap.get(this.userId.toLowerCase());
-//			System.out.println("BACKUP server check\n");
-//			System.out.println(this.gameInfoObj.getP2PplayerPostionMap() + "\n");
-			if(c!=null){
-			//System.out.println(c.toString());
-			}else {
-				System.out.println("c is null");
-			}
-			if(e.getKeyCode()==KeyEvent.VK_UP){
-				System.out.println("UP");
-				c.setRow(c.getRow()-1);
-				c.setColumn(c.getColumn());
-				
-//				System.out.println("Move is "+moved);
-				moved = this.serverStub.moveUser(userId, c);
-//				System.out.println("Move is "+moved);
-				if(moved){
-				displayupdatedMaze();
-				}else{
-					System.out.println("CANNOT MOVE\n");
-				}
-			}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
-				System.out.println("DOWN");
-				c.setRow(c.getRow()+1);
-				c.setColumn(c.getColumn());
-				//System.out.println(c.toString());
-				moved = this.serverStub.moveUser(userId, c);
-				if(moved){
-				displayupdatedMaze();
-				}else{
-					System.out.println("Cannot Move");
-				}
-			}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){    
-				System.out.println("RIGHT");
-				c.setRow(c.getRow());
-				c.setColumn(c.getColumn()+1);
-				//System.out.println(c.toString());
-				moved = this.serverStub.moveUser(userId, c);
-				if(moved){
-				displayupdatedMaze();
-				}else{
-					System.out.println("Cannot Move");
-				}
-			}else if(e.getKeyCode()==KeyEvent.VK_LEFT){
-				System.out.println("LEFT");
-				c.setRow(c.getRow());
-				c.setColumn(c.getColumn()-1);
-				//System.out.println(c.toString());
-				moved = this.serverStub.moveUser(userId, c);
-				if(moved){
-				displayupdatedMaze();
-				}else{
-					System.out.println("Cannot Move");
-				}
-			}
-			}catch(Exception e1){
-				System.out.println(e1.getMessage());
-		}
-		}else{
-			System.out.println("Game has ended");
 			try{
-				playerScoreMap = serverStub.getPlayerScoreMap();
-				System.out.println("***********************************************");
-				System.out.println("FINAL SCORES\n");
-				Set<String> scores = new HashSet<String>();
-				scores = playerScoreMap.keySet();
-				Iterator<String> scoreIterator = scores.iterator();
-//				System.out.println(scores.size());
-				while(scoreIterator.hasNext()){
-					String user = (String) scoreIterator.next();
-					System.out.print(user+" - ");
-					System.out.println(playerScoreMap.get(user));
+	            boolean moved = false;
+				playerPostionMap= this.serverStub.getPlayerPostionMap();	
+	//			System.out.println("Size " + playerPostionMap.size() + "Username " + this.userId);
+				Coordinate c = playerPostionMap.get(this.userId.toLowerCase());
+	//			System.out.println("BACKUP server check\n");
+	//			System.out.println(this.gameInfoObj.getP2PplayerPostionMap() + "\n");
+				if(c!=null){
+				//System.out.println(c.toString());
+				}else {
+					System.out.println("c is null");
 				}
-				System.out.println();
-				System.out.println("***********************************************");
-				
-			}catch(Exception mm){
-				mm.printStackTrace();
+				if(e.getKeyCode()==KeyEvent.VK_UP){
+					System.out.println("UP");
+					c.setRow(c.getRow()-1);
+					c.setColumn(c.getColumn());
+					
+	//				System.out.println("Move is "+moved);
+					moved = this.serverStub.moveUser(userId, c);
+	//				System.out.println("Move is "+moved);
+					if(moved){
+					displayupdatedMaze();
+					this.printPlayerScores(this.checkGameEnded());
+					}else{
+						System.out.println("CANNOT MOVE\n");
+					}
+				}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
+					System.out.println("DOWN");
+					c.setRow(c.getRow()+1);
+					c.setColumn(c.getColumn());
+					//System.out.println(c.toString());
+					moved = this.serverStub.moveUser(userId, c);
+					if(moved){
+					displayupdatedMaze();
+					this.printPlayerScores(this.checkGameEnded());
+					}else{
+						System.out.println("Cannot Move");
+					}
+				}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){    
+					System.out.println("RIGHT");
+					c.setRow(c.getRow());
+					c.setColumn(c.getColumn()+1);
+					//System.out.println(c.toString());
+					moved = this.serverStub.moveUser(userId, c);
+					if(moved){
+					displayupdatedMaze();
+					this.printPlayerScores(this.checkGameEnded());
+					}else{
+						System.out.println("Cannot Move");
+					}
+				}else if(e.getKeyCode()==KeyEvent.VK_LEFT){
+					System.out.println("LEFT");
+					c.setRow(c.getRow());
+					c.setColumn(c.getColumn()-1);
+					//System.out.println(c.toString());
+					moved = this.serverStub.moveUser(userId, c);
+					if(moved){
+					displayupdatedMaze();
+					this.printPlayerScores(this.checkGameEnded());
+					}else{
+						System.out.println("Cannot Move");
+					}
+				}
+				}catch(Exception e1){
+					System.out.println(e1.getMessage());
 			}
-			Thread.currentThread().interrupt();
+		}else{
+			this.finalPlayerScores();
+		}
+	}
+	
+	private void printPlayerScores(boolean gameEnded){
+		if (gameEnded) {
+			this.finalPlayerScores();
+		}
+		else {
+			this.interimPlayerScores();
 		}
 	}
 
+	private void interimPlayerScores() {
+		try{
+			playerScoreMap = serverStub.getPlayerScoreMap();
+			System.out.println("***********************************************");
+			System.out.println("PLAYER SCORES\n");
+			Set<String> scores = new HashSet<String>();
+			scores = playerScoreMap.keySet();
+			Iterator<String> scoreIterator = scores.iterator();
+//			System.out.println(scores.size());
+			while(scoreIterator.hasNext()){
+				String user = (String) scoreIterator.next();
+				System.out.print(user+" - ");
+				System.out.println(playerScoreMap.get(user));
+			}
+			System.out.println();
+			System.out.println("***********************************************");
+			
+		}catch(Exception mm){
+			mm.printStackTrace();
+		}
+	}
+	
+	private void finalPlayerScores() {
+		System.out.println("Game has ended");
+		try{
+			playerScoreMap = serverStub.getPlayerScoreMap();
+			System.out.println("***********************************************");
+			System.out.println("FINAL SCORES\n");
+			Set<String> scores = new HashSet<String>();
+			scores = playerScoreMap.keySet();
+			Iterator<String> scoreIterator = scores.iterator();
+//			System.out.println(scores.size());
+			while(scoreIterator.hasNext()){
+				String user = (String) scoreIterator.next();
+				System.out.print(user+" - ");
+				System.out.println(playerScoreMap.get(user));
+			}
+			System.out.println();
+			System.out.println("***********************************************");
+			Thread.currentThread().interrupt();
+			System.exit(0);
+		}catch(Exception mm){
+			mm.printStackTrace();
+		}
+	}
+	
 	private boolean checkGameEnded() {
 		// TODO Auto-generated method stub
 		this.hasGameEnded= false;

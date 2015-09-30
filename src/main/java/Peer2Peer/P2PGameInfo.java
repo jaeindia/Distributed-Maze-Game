@@ -149,6 +149,12 @@ public class P2PGameInfo implements Serializable {
 
 		}
 		
+		boolean addtoP2PPlayerScoreMap(String username) {
+			this.P2PplayerScoreMap.put(username.toLowerCase(), 0);
+			
+			return true;
+		}
+		
 		boolean updatePlayerScoreMap(String username, int score) {
 //			System.out.println("Inside update player score map" + username + " " + score);
 			if (!this.P2PplayerScoreMap.containsKey(username.toLowerCase())) {
@@ -160,8 +166,8 @@ public class P2PGameInfo implements Serializable {
 				this.P2PplayerScoreMap.get(username.toLowerCase()) + score);
 			}
 			
-			System.out.println("Player Score Map");
-			System.out.println(P2PplayerScoreMap);
+//			System.out.println("Player Score Map");
+//			System.out.println(P2PplayerScoreMap);
 			
 			return true;
 		}

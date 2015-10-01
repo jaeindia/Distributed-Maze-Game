@@ -1,16 +1,18 @@
 package Peer2Peer;
- import java.rmi.*;
+/*  *****************************************************
+ * Distributed Systems Assignment - 
+ * @author
+ * Abhinav Sarja - A0134505N
+ * Jayakumar - A0134431U
+ * 
+ * This class is the final version of the assignment providing the required functionality as mentioned in the Assignment document 1.
+ * 
+ *  *****************************************************
+ */
+
+import java.rmi.*;
 import java.util.Map;
 
-
-import Client.Client;
-import Server.Coordinate;
- 
- 
-/**
- * @author a0134505
- *
- */
 public interface P2PGame extends Remote {
 	
 	public void notifyPlayer(boolean gameStarted) throws RemoteException;
@@ -40,9 +42,5 @@ public interface P2PGame extends Remote {
 	public boolean isAlive() throws RemoteException;
 
 	public void notifynewRegistry() throws RemoteException;
-	
-//	public String getMessage() throws RemoteException;
-	
-	
 
 }

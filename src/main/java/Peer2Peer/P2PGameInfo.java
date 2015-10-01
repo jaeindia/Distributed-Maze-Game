@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.Random;
-import Server.Coordinate;
 
 public class P2PGameInfo implements Serializable {
 

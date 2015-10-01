@@ -3,7 +3,7 @@ package Peer2Peer;
  * Distributed Systems Assignment - 
  * @author
  * Abhinav Sarja - A0134505N
- * Jayakumar - 
+ * Jayakumar - A0134431U
  * 
  * This class is the final version of the assignment providing the required functionality as mentioned in the Assignment document 1.
  * 
@@ -925,10 +925,5 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 		}
 
 	}
-
-
-
-
-
 
 }

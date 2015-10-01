@@ -756,7 +756,7 @@ public class P2PGameImpl extends UnicastRemoteObject implements P2PGame, Runnabl
 				if(c!=null){
 					System.out.println(c.toString());
 				}else {
-					System.out.println("c is null");
+					System.out.println("c is null ");
 				}
 				if(e.equalsIgnoreCase("W")){
 					System.out.println("UP");
